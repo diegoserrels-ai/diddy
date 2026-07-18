@@ -28,7 +28,8 @@ import {
     updateTurn,
     updateMoney,
     updateRosters,
-    updateMessage
+    updateMessage,
+    updateNeitherKnows
 } from "./ui.js";
 
 
@@ -65,6 +66,16 @@ async function initializeGame() {
 
     refreshUI();
     console.log("7 - UI refreshed");
+        
+    document
+        .getElementById("player1SkipButton")
+        .addEventListener("click", () => toggleNeitherKnows(1));
+
+    document
+        .getElementById("player2SkipButton")
+        .addEventListener("click", () => toggleNeitherKnows(2));
+
+    updateNeitherKnows();
 
     startRound();
     console.log("8 - Round started");
@@ -125,6 +136,11 @@ function startRound() {
 
     game.auction.currentTurn =
         game.auction.openingPlayer;
+    game.neitherKnows.votes = 0;
+    game.neitherKnows.player1Voted = false;
+    game.neitherKnows.player2Voted = false;
+
+    updateNeitherKnows();
 
     updateCurrentItem();
 
@@ -386,6 +402,8 @@ function switchTurn() {
         ).name}'s turn.`
 
     );
+
+    refreshUI();
 
     autoWinIfOpponentBroke();
 
@@ -730,7 +748,56 @@ function finishDraft() {
 // OPTIONAL HISTORY HELPERS
 // =========================
 
+function toggleNeitherKnows(player) {
 
+    if (game.status.gameOver) return;
+
+    if (game.neitherKnows.remaining <= 0) return;
+
+    if (player === 1) {
+
+        game.neitherKnows.player1Voted =
+            !game.neitherKnows.player1Voted;
+
+    } else {
+
+        game.neitherKnows.player2Voted =
+            !game.neitherKnows.player2Voted;
+
+    }
+
+    game.neitherKnows.votes = 0;
+
+if (game.neitherKnows.player1Voted) {
+    game.neitherKnows.votes++;
+}
+
+if (game.neitherKnows.player2Voted) {
+    game.neitherKnows.votes++;
+}
+
+    updateNeitherKnows();
+
+    if (game.neitherKnows.votes === 2) {
+
+        game.neitherKnows.remaining--;
+
+        game.neitherKnows.votes = 0;
+        game.neitherKnows.player1Voted = false;
+        game.neitherKnows.player2Voted = false;
+
+        updateNeitherKnows();
+        updateMessage("Item skipped by mutual agreement.");
+
+        setTimeout(() => {
+
+            startRound();
+
+        }, 250);
+
+    }
+
+}
 
 // =========================
 // DEBUG HELPERS

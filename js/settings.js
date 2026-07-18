@@ -94,6 +94,77 @@ const categories = {
 
     },
 
+        "Actors": {
+
+        file: "actors.json",
+
+        sports: false
+
+    },
+
+
+    "Candy": {
+
+        file: "Candy.json",
+
+        sports: false
+
+    },
+
+
+    "Characters": {
+
+        file: "characters.json",
+
+        sports: false
+
+    },
+
+
+    "Chips": {
+
+        file: "chips.json",
+
+        sports: false
+
+    },
+
+
+    "Clothing Brands": {
+
+        file: "clothingbrands.json",
+
+        sports: false
+
+    },
+
+
+    "Ice Cream": {
+
+        file: "icecream.json",
+
+        sports: false
+
+    },
+
+
+    "Memes": {
+
+        file: "memes.json",
+
+        sports: false
+
+    },
+
+
+    "Soft Drinks": {
+
+        file: "SoftDrinks.json",
+
+        sports: false
+
+    },
+
 
     "Vacation Spots": {
 

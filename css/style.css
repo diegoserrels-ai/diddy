@@ -1154,6 +1154,114 @@ input::selection{
 
 }
 
+/* =========================
+   NEITHER KNOWS BUTTON
+========================= */
+
+.skip-button{
+
+    width:100%;
+
+    margin-top:20px;
+
+    padding:14px;
+
+    border:none;
+
+    border-radius:12px;
+
+    background:#a61d24;
+
+    color:white;
+
+    cursor:pointer;
+
+    transition:.2s;
+
+    box-shadow:0 5px 12px rgba(0,0,0,.35);
+
+}
+
+.skip-button:hover{
+
+    background:#c62828;
+
+    transform:translateY(-2px);
+
+}
+
+.skip-button:active{
+
+    transform:translateY(0);
+
+}
+
+.skip-button:disabled{
+
+    background:#666;
+
+    color:#bbb;
+
+    cursor:not-allowed;
+
+    transform:none;
+
+    box-shadow:none;
+
+}
+
+.skip-title{
+
+    font-size:17px;
+
+    font-weight:700;
+
+}
+
+.skip-votes{
+
+    margin-top:6px;
+
+    font-size:28px;
+
+    font-weight:700;
+
+}
+
+.skip-remaining{
+
+    margin-top:6px;
+
+    font-size:13px;
+
+    opacity:.9;
+
+}
+
+.skip-armed{
+
+    background:#d62828;
+
+    animation:skipPulse .8s infinite alternate;
+
+}
+
+@keyframes skipPulse{
+
+    from{
+
+        transform:scale(1);
+
+    }
+
+    to{
+
+        transform:scale(1.03);
+
+    }
+
+}
+
 /* =====================================================
    END OF FILE
 ===================================================== */

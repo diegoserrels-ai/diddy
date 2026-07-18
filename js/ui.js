@@ -181,7 +181,48 @@ export function updateMessage(message = "") {
 
 }
 
+// =========================
+// NEITHER KNOWS
+// =========================
 
+export function updateNeitherKnows() {
+
+    const p1 =
+        document.getElementById("player1SkipButton");
+
+    const p2 =
+        document.getElementById("player2SkipButton");
+
+    document.getElementById("skipVotes1").textContent =
+        `${game.neitherKnows.votes} / 2`;
+
+    document.getElementById("skipVotes2").textContent =
+        `${game.neitherKnows.votes} / 2`;
+
+    document.getElementById("skipRemaining1").textContent =
+        `${game.neitherKnows.remaining} Remaining`;
+
+    document.getElementById("skipRemaining2").textContent =
+        `${game.neitherKnows.remaining} Remaining`;
+
+    const disabled =
+        game.status.gameOver ||
+        game.neitherKnows.remaining <= 0;
+
+    p1.disabled = disabled;
+    p2.disabled = disabled;
+
+    p1.classList.toggle(
+        "skip-armed",
+        game.neitherKnows.votes === 1
+    );
+
+    p2.classList.toggle(
+        "skip-armed",
+        game.neitherKnows.votes === 1
+    );
+
+}
 
 // =========================
 // FULL REFRESH
@@ -197,6 +238,7 @@ export function refreshUI() {
     updateBid();
     updateLeader();
     updateTurn();
+    updateNeitherKnows();
 
     // Highlight active player
     const player1Card = document.getElementById("player1Card");

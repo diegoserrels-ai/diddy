@@ -6,10 +6,6 @@
 
 export const game = {
 
-    // -------------------------
-    // GAME SETTINGS
-    // -------------------------
-
     settings: {
 
         player1: "",
@@ -23,12 +19,6 @@ export const game = {
 
     },
 
-
-
-    // -------------------------
-    // PLAYERS
-    // -------------------------
-
     player1: {
 
         name: "",
@@ -37,8 +27,6 @@ export const game = {
 
     },
 
-
-
     player2: {
 
         name: "",
@@ -46,12 +34,6 @@ export const game = {
         roster: []
 
     },
-
-
-
-    // -------------------------
-    // AUCTION
-    // -------------------------
 
     auction: {
 
@@ -73,11 +55,21 @@ export const game = {
 
     },
 
-
-
     // -------------------------
-    // GAME STATUS
+    // NEITHER KNOWS
     // -------------------------
+
+    neitherKnows: {
+
+        votes: 0,
+
+        player1Voted: false,
+
+        player2Voted: false,
+
+        remaining: 0
+
+    },
 
     status: {
 
@@ -122,8 +114,43 @@ export function resetGame() {
 
     game.auction.history = [];
 
-    game.status.started = false;
+    // -------------------------
+    // SET SKIP LIMIT
+    // -------------------------
 
+    const size = game.settings.rosterSize;
+
+    if (size <= 3) {
+
+        game.neitherKnows.remaining = 0;
+
+    } else if (size <= 6) {
+
+        game.neitherKnows.remaining = 1;
+
+    } else if (size <= 10) {
+
+        game.neitherKnows.remaining = 2;
+
+    } else if (size <= 15) {
+
+        game.neitherKnows.remaining = 3;
+
+    } else if (size <= 25) {
+
+        game.neitherKnows.remaining = 4;
+
+    } else {
+
+        game.neitherKnows.remaining = 5;
+
+    }
+
+    game.neitherKnows.votes = 0;
+    game.neitherKnows.player1Voted = false;
+    game.neitherKnows.player2Voted = false;
+
+    game.status.started = false;
     game.status.gameOver = false;
 
 }

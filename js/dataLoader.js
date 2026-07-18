@@ -143,6 +143,30 @@ function getFileName() {
         case "Alcohol":
             return "alcohol.json";
 
+                case "Actors":
+            return "actors.json";
+
+        case "Candy":
+            return "Candy.json";
+
+        case "Characters":
+            return "characters.json";
+
+        case "Chips":
+            return "chips.json";
+
+        case "Clothing Brands":
+            return "clothingbrands.json";
+
+        case "Ice Cream":
+            return "icecream.json";
+
+        case "Memes":
+            return "memes.json";
+
+        case "Soft Drinks":
+            return "SoftDrinks.json";    
+
         case "Vacation Spots":
             return "vacationSpots.json";
 

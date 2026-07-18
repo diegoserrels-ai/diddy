@@ -16,10 +16,6 @@
 
     <div class="game-container">
 
-        <!-- =========================
-             HEADER
-        ========================== -->
-
         <header class="game-header">
 
             <h1>Auction Draft Debate</h1>
@@ -36,15 +32,9 @@
 
         </header>
 
-        <!-- =========================
-             MAIN GAME BOARD
-        ========================== -->
-
         <main class="game-board">
 
-            <!-- =====================
-                 PLAYER 1
-            ====================== -->
+            <!-- PLAYER 1 -->
 
             <aside class="player-card" id="player1Card">
 
@@ -62,12 +52,8 @@
                         💰 BANK
                     </div>
 
-                    <div
-                        id="player1Money"
-                        class="money">
-
+                    <div id="player1Money" class="money">
                         $0
-
                     </div>
 
                 </div>
@@ -82,24 +68,46 @@
 
                 </div>
 
+                <button
+    id="player1SkipButton"
+    class="skip-button">
+
+    <div class="skip-title">
+
+        🚫 Neither Knows
+
+    </div>
+
+    <div
+        id="skipVotes1"
+        class="skip-votes">
+
+        0 / 2
+
+    </div>
+
+    <div
+        id="skipRemaining1"
+        class="skip-remaining">
+
+        0 Remaining
+
+    </div>
+
+</button>
+
             </aside>
 
-            <!-- =====================
-                 AUCTION
-            ====================== -->
+            <!-- AUCTION -->
 
             <section class="auction-area">
 
                 <div class="auction-banner">
-
                     🔥 NOW AUCTIONING 🔥
-
                 </div>
 
                 <div id="currentItem">
-
                     Loading...
-
                 </div>
 
                 <div class="auction-info">
@@ -107,15 +115,11 @@
                     <div class="info-card">
 
                         <span class="label">
-
                             Current Bid
-
                         </span>
 
                         <div id="currentBid">
-
                             $0
-
                         </div>
 
                     </div>
@@ -123,15 +127,11 @@
                     <div class="info-card">
 
                         <span class="label">
-
                             Leading Bidder
-
                         </span>
 
                         <div id="currentBidder">
-
                             None
-
                         </div>
 
                     </div>
@@ -139,9 +139,7 @@
                 </div>
 
                 <div id="turnDisplay">
-
                     Waiting...
-
                 </div>
 
                 <div class="bid-controls">
@@ -173,9 +171,7 @@
 
             </section>
 
-            <!-- =====================
-                 PLAYER 2
-            ====================== -->
+            <!-- PLAYER 2 -->
 
             <aside class="player-card" id="player2Card">
 
@@ -193,12 +189,8 @@
                         💰 BANK
                     </div>
 
-                    <div
-                        id="player2Money"
-                        class="money">
-
+                    <div id="player2Money" class="money">
                         $0
-
                     </div>
 
                 </div>
@@ -213,13 +205,37 @@
 
                 </div>
 
+                <button
+    id="player2SkipButton"
+    class="skip-button">
+
+    <div class="skip-title">
+
+        🚫 Neither Knows
+
+    </div>
+
+    <div
+        id="skipVotes2"
+        class="skip-votes">
+
+        0 / 2
+
+    </div>
+
+    <div
+        id="skipRemaining2"
+        class="skip-remaining">
+
+        0 Remaining
+
+    </div>
+
+</button>
+
             </aside>
 
         </main>
-
-        <!-- =========================
-             FOOTER
-        ========================== -->
 
         <footer class="game-footer">
 
@@ -246,7 +262,6 @@
     <script
         type="module"
         src="js/auctionEngine.js">
-
     </script>
 
 </body>
