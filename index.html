@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Auction Draft Debate</title>
+
+    <link rel="stylesheet" href="css/style.css">
+
+</head>
+
+<body>
+
+<div class="setup-page">
+
+    <div class="setup-card">
+
+        <h1>Auction Draft Debate</h1>
+
+        <p class="subtitle">
+            Build your roster. Win the debate.
+        </p>
+
+        <h2>New Game</h2>
+
+        <div class="form-group">
+
+            <label for="player1Name">Player 1 Name</label>
+
+            <input
+                id="player1Name"
+                type="text"
+                placeholder="Player 1">
+
+        </div>
+
+        <div class="form-group">
+
+            <label for="player2Name">Player 2 Name</label>
+
+            <input
+                id="player2Name"
+                type="text"
+                placeholder="Player 2">
+
+        </div>
+
+        <div class="form-group">
+
+            <label for="category">Category</label>
+
+            <select
+                id="category"
+                onchange="categoryChanged()">
+            </select>
+
+        </div>
+
+        <div
+            class="form-group"
+            id="sportsModeContainer"
+            style="display:none;">
+
+            <label for="sportsMode">Sports Mode</label>
+
+            <select id="sportsMode">
+
+                <option value="current">
+                    Current Players
+                </option>
+
+                <option value="allTime">
+                    All-Time Players
+                </option>
+
+            </select>
+
+        </div>
+
+        <div class="form-row">
+
+            <div class="form-group">
+
+                <label for="budget">
+                    Starting Budget
+                </label>
+
+                <input
+                    id="budget"
+                    type="number"
+                    min="1"
+                    value="100">
+
+            </div>
+
+            <div class="form-group">
+
+                <label for="rosterSize">
+                    Roster Size
+                </label>
+
+                <input
+                    id="rosterSize"
+                    type="number"
+                    min="1"
+                    value="5">
+
+            </div>
+
+        </div>
+
+        <button
+            class="start-button"
+            onclick="startGame()">
+
+            Start Auction
+
+        </button>
+
+    </div>
+
+</div>
+
+<script src="js/settings.js"></script>
+
+<script>
+
+window.onload = function () {
+
+    loadCategories();
+
+};
+
+</script>
+
+</body>
+</html>

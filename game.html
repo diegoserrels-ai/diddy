@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Auction Draft Debate</title>
+
+    <link rel="stylesheet" href="css/style.css">
+
+</head>
+
+<body>
+
+    <div class="game-container">
+
+        <!-- =========================
+             HEADER
+        ========================== -->
+
+        <header class="game-header">
+
+            <h1>Auction Draft Debate</h1>
+
+            <div class="category-pill">
+
+                <span>Category</span>
+
+                <h2 id="gameCategory">
+                    Loading...
+                </h2>
+
+            </div>
+
+        </header>
+
+        <!-- =========================
+             MAIN GAME BOARD
+        ========================== -->
+
+        <main class="game-board">
+
+            <!-- =====================
+                 PLAYER 1
+            ====================== -->
+
+            <aside class="player-card" id="player1Card">
+
+                <div class="player-header">
+
+                    <h2 id="player1Title">
+                        Player 1
+                    </h2>
+
+                </div>
+
+                <div class="money-box">
+
+                    <div class="label">
+                        💰 BANK
+                    </div>
+
+                    <div
+                        id="player1Money"
+                        class="money">
+
+                        $0
+
+                    </div>
+
+                </div>
+
+                <div class="roster-box">
+
+                    <div class="label">
+                        ⭐ ROSTER
+                    </div>
+
+                    <ul id="player1Roster"></ul>
+
+                </div>
+
+            </aside>
+
+            <!-- =====================
+                 AUCTION
+            ====================== -->
+
+            <section class="auction-area">
+
+                <div class="auction-banner">
+
+                    🔥 NOW AUCTIONING 🔥
+
+                </div>
+
+                <div id="currentItem">
+
+                    Loading...
+
+                </div>
+
+                <div class="auction-info">
+
+                    <div class="info-card">
+
+                        <span class="label">
+
+                            Current Bid
+
+                        </span>
+
+                        <div id="currentBid">
+
+                            $0
+
+                        </div>
+
+                    </div>
+
+                    <div class="info-card">
+
+                        <span class="label">
+
+                            Leading Bidder
+
+                        </span>
+
+                        <div id="currentBidder">
+
+                            None
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div id="turnDisplay">
+
+                    Waiting...
+
+                </div>
+
+                <div class="bid-controls">
+
+                    <input
+                        id="bidAmount"
+                        type="number"
+                        min="1"
+                        step="1"
+                        placeholder="Enter bid">
+
+                    <button
+                        id="bidButton"
+                        onclick="placeBid()">
+
+                        PLACE BID
+
+                    </button>
+
+                    <button
+                        id="passButton"
+                        onclick="passBid()">
+
+                        PASS
+
+                    </button>
+
+                </div>
+
+            </section>
+
+            <!-- =====================
+                 PLAYER 2
+            ====================== -->
+
+            <aside class="player-card" id="player2Card">
+
+                <div class="player-header">
+
+                    <h2 id="player2Title">
+                        Player 2
+                    </h2>
+
+                </div>
+
+                <div class="money-box">
+
+                    <div class="label">
+                        💰 BANK
+                    </div>
+
+                    <div
+                        id="player2Money"
+                        class="money">
+
+                        $0
+
+                    </div>
+
+                </div>
+
+                <div class="roster-box">
+
+                    <div class="label">
+                        ⭐ ROSTER
+                    </div>
+
+                    <ul id="player2Roster"></ul>
+
+                </div>
+
+            </aside>
+
+        </main>
+
+        <!-- =========================
+             FOOTER
+        ========================== -->
+
+        <footer class="game-footer">
+
+            <div
+                id="gameMessage"
+                class="message-bar">
+
+                Waiting...
+
+            </div>
+
+            <button
+                class="new-game-button"
+                onclick="location.href='index.html'">
+
+                New Game
+
+            </button>
+
+        </footer>
+
+    </div>
+
+    <script
+        type="module"
+        src="js/auctionEngine.js">
+
+    </script>
+
+</body>
+
+</html>
