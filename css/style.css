@@ -1271,7 +1271,6 @@ input::selection{
 
 .auction-notification {
     position: absolute;
-
     inset: 0;
 
     display: flex;
@@ -1286,16 +1285,24 @@ input::selection{
     opacity: 0;
     visibility: hidden;
 
+    transform: scale(0.95);
+
     transition:
-        opacity 0.25s ease,
-        visibility 0.25s ease;
+        opacity .25s ease,
+        transform .25s ease,
+        visibility .25s ease;
 
     z-index: 100;
 }
 
 .auction-notification.show {
+
     opacity: 1;
+
     visibility: visible;
+
+    transform: scale(1);
+
 }
 
 .notification-title {

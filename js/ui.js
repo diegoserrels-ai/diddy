@@ -249,7 +249,9 @@ export function showAuctionNotification(
     document
         .getElementById("auctionNotification")
         .classList.add("show");
-
+        document.getElementById("bidButton").disabled = true;
+document.getElementById("passButton").disabled = true;
+document.getElementById("bidAmount").disabled = true;
 }
 
 export function hideAuctionNotification() {
@@ -257,7 +259,9 @@ export function hideAuctionNotification() {
     document
         .getElementById("auctionNotification")
         .classList.remove("show");
-
+    document.getElementById("bidButton").disabled = false;
+document.getElementById("passButton").disabled = false;
+document.getElementById("bidAmount").disabled = false;
 }
 // =========================
 // FULL REFRESH
