@@ -1271,21 +1271,28 @@ input::selection{
 
 .auction-notification {
     position: absolute;
-    inset: 0;
+
+    top: 50%;
+    left: 50%;
+
+    transform: translate(-50%, -50%) scale(.95);
+
+    width: 80%;
+    max-width: 520px;
 
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
 
-    background: rgba(15, 18, 32, 0.94);
+    padding: 32px;
+
+    background: rgba(15, 18, 32, .96);
 
     border-radius: 18px;
 
     opacity: 0;
     visibility: hidden;
-
-    transform: scale(0.95);
 
     transition:
         opacity .25s ease,
@@ -1301,7 +1308,7 @@ input::selection{
 
     visibility: visible;
 
-    transform: scale(1);
+    transform: translate(-50%, -50%) scale(1);
 
 }
 
