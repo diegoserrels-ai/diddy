@@ -29,7 +29,9 @@ import {
     updateMoney,
     updateRosters,
     updateMessage,
-    updateNeitherKnows
+    updateNeitherKnows,
+    showAuctionNotification,
+    hideAuctionNotification
 } from "./ui.js";
 
 
@@ -292,10 +294,27 @@ window.placeBid = function () {
     }
 
     game.auction.currentBid =
-        amount;
+    amount;
 
-    game.auction.highestBidder =
-        game.auction.currentTurn;
+game.auction.highestBidder =
+    game.auction.currentTurn;
+
+const bidderName =
+    bidder.name;
+
+const itemName =
+    game.auction.currentItem.name;
+
+showAuctionNotification(
+    "💰 BID PLACED",
+    `${bidderName} bids`,
+    `$${amount}`,
+    itemName
+);
+
+setTimeout(() => {
+
+    hideAuctionNotification();
 
     updateBid();
 
@@ -304,6 +323,8 @@ window.placeBid = function () {
     switchTurn();
 
     updateActionButtons();
+
+}, 1000);
 
 };
 

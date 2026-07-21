@@ -1261,7 +1261,69 @@ input::selection{
     }
 
 }
+/* ==========================
+   Auction Notification
+========================== */
 
+.auction-area {
+    position: relative;
+}
+
+.auction-notification {
+    position: absolute;
+
+    inset: 0;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    background: rgba(15, 18, 32, 0.94);
+
+    border-radius: 18px;
+
+    opacity: 0;
+    visibility: hidden;
+
+    transition:
+        opacity 0.25s ease,
+        visibility 0.25s ease;
+
+    z-index: 100;
+}
+
+.auction-notification.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.notification-title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #ffd54a;
+    margin-bottom: 18px;
+}
+
+.notification-player {
+    font-size: 1.7rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.notification-amount {
+    font-size: 3rem;
+    font-weight: 800;
+    color: #59d86a;
+    margin-bottom: 10px;
+}
+
+.notification-item {
+    font-size: 1.5rem;
+    font-weight: 600;
+    text-align: center;
+    max-width: 85%;
+}
 /* =====================================================
    END OF FILE
 ===================================================== */

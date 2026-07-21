@@ -223,7 +223,42 @@ export function updateNeitherKnows() {
     );
 
 }
+// =========================
+// AUCTION NOTIFICATION
+// =========================
 
+export function showAuctionNotification(
+    title,
+    playerText,
+    amount,
+    item
+) {
+
+    document.getElementById("notificationTitle").textContent =
+        title;
+
+    document.getElementById("notificationPlayer").textContent =
+        playerText;
+
+    document.getElementById("notificationAmount").textContent =
+        amount;
+
+    document.getElementById("notificationItem").textContent =
+        item;
+
+    document
+        .getElementById("auctionNotification")
+        .classList.add("show");
+
+}
+
+export function hideAuctionNotification() {
+
+    document
+        .getElementById("auctionNotification")
+        .classList.remove("show");
+
+}
 // =========================
 // FULL REFRESH
 // =========================
