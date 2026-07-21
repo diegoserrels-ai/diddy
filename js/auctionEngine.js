@@ -34,7 +34,10 @@ import {
     hideAuctionNotification
 } from "./ui.js";
 
-
+import {
+    playBidSound,
+    playSoldSound
+} from "./sound.js";
 
 // =========================
 // INITIALIZE GAME
@@ -312,6 +315,8 @@ showAuctionNotification(
     itemName
 );
 
+playBidSound();
+
 setTimeout(() => {
 
     hideAuctionNotification();
@@ -546,11 +551,24 @@ function awardItem(playerNumber, price) {
     updateRosters();
 
     game.auction.openingPlayer =
-        game.auction.openingPlayer === 1
-            ? 2
-            : 1;
+    game.auction.openingPlayer === 1
+        ? 2
+        : 1;
+
+showAuctionNotification(
+    "🏆 SOLD!",
+    `${player.name} wins`,
+    `$${price}`,
+    game.auction.currentItem.name
+);
+
+setTimeout(() => {
+
+    hideAuctionNotification();
 
     continueDraft();
+
+}, 1250);
 
 }
 
