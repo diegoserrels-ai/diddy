@@ -1,5 +1,5 @@
-const bidSound = new Audio("assets/sounds/bid.mp3");
-const soldSound = new Audio("assets/sounds/sold.mp3");
+const bidSound = new Audio("assets/bid.mp3");
+const soldSound = new Audio("assets/sold.mp3");
 
 bidSound.volume = 0.40;
 soldSound.volume = 0.45;
