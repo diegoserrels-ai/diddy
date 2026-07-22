@@ -35,6 +35,8 @@ export const game = {
 
     },
 
+    players: [],
+
     auction: {
 
         deck: [],
@@ -113,6 +115,11 @@ export function resetGame() {
     game.auction.round = 1;
 
     game.auction.history = [];
+
+    game.players = [
+    game.player1,
+    game.player2
+];
 
     // -------------------------
     // SET SKIP LIMIT

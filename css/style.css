@@ -366,6 +366,447 @@ button:hover{
    GAME LAYOUT
 ===================================================== */
 
+.mobile-player-area {
+
+    display: block;
+
+    padding: 16px;
+
+}
+
+.mobile-player-status {
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 6px;
+
+    margin-bottom: 12px;
+
+}
+
+.status-pill {
+
+    font-size: .75rem;
+
+    font-weight: 600;
+
+    padding: 4px 8px;
+
+    border-radius: 999px;
+
+    background: #555;
+
+    color: white;
+
+}
+
+.status-pill.active {
+
+    background: #1976d2;
+
+}
+
+.status-pill.turn {
+
+    background: #2e7d32;
+
+}
+
+.status-pill.complete {
+
+    background: #6a1b9a;
+
+}
+
+.status-pill.danger {
+
+    background: #c62828;
+
+}
+
+.mobile-roster-item {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    padding: 6px 0;
+
+}
+
+.mobile-neither-knows {
+
+    margin-top: 16px;
+
+    padding-top: 12px;
+
+    border-top: 1px solid #555;
+
+}
+
+.mobile-skip-button {
+
+    width: 100%;
+
+    padding: 10px;
+
+    border: none;
+
+    border-radius: 8px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+}
+
+.mobile-skip-info {
+
+    margin-top: 8px;
+
+    text-align: center;
+
+    font-size: .8rem;
+
+    opacity: .8;
+
+}
+
+#mobilePlayerContainer{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:12px;
+
+}
+
+.mobile-player-card{
+
+    background:#222;
+
+    border-radius:12px;
+
+    padding:14px;
+
+}
+
+.mobile-player-card.active {
+
+    border-color: #4caf50;
+
+    box-shadow: 0 0 18px rgba(76, 175, 80, .45);
+
+}
+
+.mobile-player-category {
+
+    font-size: .8rem;
+
+    color: #bbbbbb;
+
+    margin-bottom: 10px;
+
+    text-transform: uppercase;
+
+    letter-spacing: .05em;
+
+}
+
+.mobile-player-top{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:10px;
+
+}
+
+.mobile-player-name{
+
+    font-weight:700;
+
+    font-size:1.1rem;
+
+}
+
+.mobile-player-money{
+
+    font-weight:700;
+
+    font-size:1rem;
+
+}
+
+.mobile-player-bottom{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    opacity:.85;
+
+}
+
+.mobile-player-header {
+
+    cursor: pointer;
+
+}
+
+.mobile-expand-icon {
+
+    font-size: .9rem;
+
+    opacity: .8;
+
+}
+
+.mobile-layout {
+
+    display: none;
+
+}
+
+.mobile-header {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: flex-start;
+
+    padding: 16px;
+
+    border-bottom: 1px solid rgba(255,255,255,.1);
+
+}
+
+.mobile-title h1 {
+
+    margin: 0;
+
+    font-size: 1.25rem;
+
+    line-height: 1.2;
+
+}
+
+.mobile-game-info {
+
+    text-align: right;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 4px;
+
+    font-size: .85rem;
+
+    opacity: .9;
+
+}
+
+.mobile-auction {
+
+    padding: 16px;
+
+}
+
+.mobile-auction-banner {
+
+    font-weight: 700;
+
+    text-align: center;
+
+    margin-bottom: 12px;
+
+}
+
+.mobile-auction-title {
+
+    font-size: 1.2rem;
+
+    font-weight: bold;
+
+    margin-bottom: 12px;
+
+}
+
+.mobile-auction-player {
+
+    font-size: 1.4rem;
+
+    font-weight: bold;
+
+    margin-bottom: 18px;
+
+}
+
+.mobile-auction-row {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    padding: 8px 0;
+
+    border-top: 1px solid #444;
+
+}
+
+.mobile-pass-button {
+
+    width: 100%;
+
+    margin-top: 16px;
+
+    padding: 12px;
+
+    font-size: 1rem;
+
+    font-weight: bold;
+
+    border: none;
+
+    border-radius: 10px;
+
+    cursor: pointer;
+
+}
+
+.mobile-auction-status {
+
+    margin-top: 18px;
+
+    margin-bottom: 14px;
+
+    padding-top: 14px;
+
+    border-top: 1px solid #444;
+
+    text-align: center;
+
+    font-size: .95rem;
+
+    font-weight: 600;
+
+}
+
+.mobile-bid-section {
+
+    display: flex;
+
+    gap: 10px;
+
+    margin: 16px 0;
+
+}
+
+.mobile-bid-input {
+
+    flex: 1;
+
+    padding: 10px;
+
+    font-size: 1rem;
+
+    border-radius: 8px;
+
+    border: 1px solid #555;
+
+}
+
+.mobile-bid-button {
+
+    padding: 10px 16px;
+
+    font-weight: bold;
+
+    border: none;
+
+    border-radius: 8px;
+
+    cursor: pointer;
+
+}
+
+.mobile-current-item {
+
+    font-size: 1.4rem;
+
+    font-weight: 700;
+
+    text-align: center;
+
+    margin-bottom: 16px;
+
+}
+
+.mobile-auction-info {
+
+    display: flex;
+
+    gap: 12px;
+
+    margin-bottom: 16px;
+
+}
+
+.mobile-game-area {
+
+    display: none;
+
+}
+
+.mobile-auction-panel {
+
+    background: #2d2d2d;
+
+    border: 1px solid #444;
+
+    border-radius: 14px;
+
+    padding: 18px;
+
+    margin-bottom: 18px;
+
+    color: white;
+
+}
+
+.mobile-info-card {
+
+    flex: 1;
+
+    text-align: center;
+
+}
+
+.mobile-bid-controls {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 10px;
+
+}
+
+.mobile-bid-controls input,
+.mobile-bid-controls button {
+
+    width: 100%;
+
+}
+
 .game-container{
 
     width:min(1500px,95%);
@@ -1367,6 +1808,91 @@ input::selection{
     line-height: 1.25;
 
 }
+
+/* =========================
+   MOBILE PLAYER CARDS
+========================= */
+
+.mobile-player-card {
+
+    background: #2d2d2d;
+
+    border: 1px solid #4a4a4a;
+
+    border-radius: 14px;
+
+    padding: 16px;
+
+    color: white;
+
+    box-shadow: 0 2px 8px rgba(0,0,0,.25);
+
+}
+
+.mobile-player-top {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    margin-bottom: 10px;
+
+}
+
+.mobile-player-top {
+
+    border-bottom: 1px solid #444;
+
+    padding-bottom: 12px;
+
+    margin-bottom: 12px;
+
+}
+
+.mobile-player-name {
+
+    font-size: 1.1rem;
+
+    font-weight: bold;
+
+}
+
+.mobile-player-money {
+
+    color: #62d26f;
+
+    font-size: 1.1rem;
+
+    font-weight: 700;
+
+}
+
+.mobile-player-bottom {
+
+    font-size: .9rem;
+
+    opacity: .85;
+
+}
+
+@media (max-width: 768px) {
+
+    .desktop-board {
+
+        display: none;
+
+    }
+
+    .mobile-game-area {
+
+    display: block;
+
+}
+
+}
+
 /* =====================================================
    END OF FILE
 ===================================================== */

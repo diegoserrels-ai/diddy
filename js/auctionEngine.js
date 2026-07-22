@@ -562,6 +562,8 @@ showAuctionNotification(
     game.auction.currentItem.name
 );
 
+playSoldSound();
+
 setTimeout(() => {
 
     hideAuctionNotification();

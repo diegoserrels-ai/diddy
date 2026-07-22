@@ -5,7 +5,7 @@
 // =========================
 
 import { game } from "./gameState.js";
-
+let expandedMobilePlayers = new Set();
 
 
 // =========================
@@ -14,11 +14,19 @@ import { game } from "./gameState.js";
 
 export function updatePlayerNames() {
 
-    document.getElementById("player1Title").textContent =
-        game.player1.name;
+    game.players.forEach((player, index) => {
 
-    document.getElementById("player2Title").textContent =
-        game.player2.name;
+        const title = document.getElementById(
+            `player${index + 1}Title`
+        );
+
+        if (title) {
+
+            title.textContent = player.name;
+
+        }
+
+    });
 
 }
 
@@ -43,11 +51,19 @@ export function updateCategory() {
 
 export function updateMoney() {
 
-    document.getElementById("player1Money").textContent =
-        `$${game.player1.money}`;
+    game.players.forEach((player, index) => {
 
-    document.getElementById("player2Money").textContent =
-        `$${game.player2.money}`;
+        const moneyElement = document.getElementById(
+            `player${index + 1}Money`
+        );
+
+        if (moneyElement) {
+
+            moneyElement.textContent = `$${player.money}`;
+
+        }
+
+    });
 
 }
 
@@ -59,15 +75,17 @@ export function updateMoney() {
 
 export function updateRosters() {
 
-    drawRoster(
-        "player1Roster",
-        game.player1.roster
-    );
+    game.players.forEach((player, index) => {
 
-    drawRoster(
-        "player2Roster",
-        game.player2.roster
-    );
+        drawRoster(
+
+            `player${index + 1}Roster`,
+
+            player.roster
+
+        );
+
+    });
 
 }
 
@@ -280,24 +298,372 @@ export function refreshUI() {
     updateNeitherKnows();
 
     // Highlight active player
-    const player1Card = document.getElementById("player1Card");
-    const player2Card = document.getElementById("player2Card");
+    game.players.forEach((player, index) => {
 
-    if (player1Card && player2Card) {
+    const card = document.getElementById(
+        `player${index + 1}Card`
+    );
 
-        player1Card.classList.remove("active");
-        player2Card.classList.remove("active");
+    if (card) {
 
-        if (!game.status.gameOver) {
+        card.classList.remove("active");
 
-            if (game.auction.currentTurn === 1) {
-                player1Card.classList.add("active");
-            } else {
-                player2Card.classList.add("active");
-            }
+        if (
+            !game.status.gameOver &&
+            game.auction.currentTurn === index + 1
+        ) {
+
+            card.classList.add("active");
 
         }
 
     }
+
+});
+
+updateMobileUI();
+
+updateMobileAuctionPanel();
+
+}
+
+function updateMobileUI() {
+
+    const container = document.getElementById(
+        "mobilePlayerContainer"
+    );
+
+    if (!container) return;
+
+    container.innerHTML = "";
+
+    game.players.forEach((player, index) => {
+
+    container.appendChild(
+        createMobilePlayerCard(player, index)
+    );
+
+});
+
+}
+
+function createMobilePlayerCard(player, index) {
+
+    const card = document.createElement("div");
+
+    card.className = "mobile-player-card";
+
+if (
+    !game.status.gameOver &&
+    game.auction.currentTurn === index + 1
+) {
+
+    card.classList.add("active");
+
+}
+
+    const expanded = expandedMobilePlayers.has(index);
+
+    card.innerHTML = `
+
+        <div class="mobile-player-header">
+
+            <div class="mobile-player-top">
+
+                <div class="mobile-player-name">
+
+                    ${player.name}
+
+                </div>
+
+                <div class="mobile-player-money">
+
+                    $${player.money}
+
+                </div>
+
+            </div>
+
+            <div class="mobile-player-category">
+
+    ${game.settings.category}
+    ${
+        game.settings.category === "Sports"
+            ? ` (${game.settings.sportsMode})`
+            : ""
+    }
+
+</div>
+
+<div class="mobile-player-status">
+
+    ${
+        game.currentBidder === index + 1
+            ? `<span class="status-pill active">Current Bidder</span>`
+            : ""
+    }
+
+    ${
+        player.money <= 0
+            ? `<span class="status-pill danger">No Money</span>`
+            : ""
+    }
+
+    ${
+        player.roster.length >= game.settings.rosterSize
+            ? `<span class="status-pill complete">Roster Full</span>`
+            : ""
+    }
+
+</div>
+
+            <div class="mobile-player-bottom">
+
+                <span>
+
+                    Roster ${player.roster.length}/${game.settings.rosterSize}
+
+                </span>
+
+                <div class="mobile-expand-icon">
+
+                    ${expanded ? "▲" : "▼"}
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="mobile-player-roster ${expanded ? "expanded" : ""}">
+
+            ${
+                player.roster.length
+                    ? player.roster
+                          .map(
+                              item =>
+                                  `<div class="mobile-roster-item">
+                                      ${item.name}
+                                      <span>$${item.price ?? 0}</span>
+                                   </div>`
+                          )
+                          .join("")
+                    : "<div><em>No players yet</em></div>"
+            }
+
+            <div class="mobile-neither-knows">
+
+                <button
+                    class="mobile-skip-button"
+                    ${game.status.gameOver || game.neitherKnows.remaining <= 0 ? "disabled" : ""}
+                >
+
+                    Neither Knows
+
+                </button>
+
+                <div class="mobile-skip-info">
+
+                    ${game.neitherKnows.remaining} Remaining
+
+                    •
+
+                    ${game.neitherKnows.votes}/2 Votes
+
+                </div>
+
+            </div>
+
+        </div>
+
+    `;
+
+    card.querySelector(".mobile-player-header")
+        .addEventListener("click", () => {
+
+            if (expanded) {
+
+                expandedMobilePlayers.delete(index);
+
+            } else {
+
+                expandedMobilePlayers.add(index);
+
+            }
+
+            updateMobileUI();
+
+        });
+
+    const skipButton = card.querySelector(".mobile-skip-button");
+
+    if (skipButton) {
+
+        skipButton.addEventListener("click", () => {
+
+            const originalButton = document.getElementById(
+                index === 0
+                    ? "player1SkipButton"
+                    : "player2SkipButton"
+            );
+
+            if (originalButton) {
+
+                originalButton.click();
+
+            }
+
+        });
+
+    }
+
+    return card;
+
+}
+
+function updateMobileAuctionPanel() {
+
+    const panel = document.getElementById(
+        "mobileAuctionPanel"
+    );
+
+    if (!panel) return;
+
+    const leader =
+        game.auction.highestBidder === 1
+            ? game.player1.name
+            : game.auction.highestBidder === 2
+                ? game.player2.name
+                : "None";
+
+    const turn =
+        game.auction.currentTurn === 1
+            ? game.player1.name
+            : game.player2.name;
+
+    panel.innerHTML = `
+
+        <div class="mobile-auction-title">
+
+            Current Auction
+
+        </div>
+
+        <div class="mobile-auction-player">
+
+            ${
+                game.auction.currentItem
+                    ? game.auction.currentItem.name
+                    : "Loading..."
+            }
+
+        </div>
+
+        <div class="mobile-auction-row">
+
+            <span>Current Bid</span>
+
+            <strong>$${game.auction.currentBid}</strong>
+
+        </div>
+
+        <div class="mobile-auction-row">
+
+            <span>Leader</span>
+
+            <strong>${leader}</strong>
+
+        </div>
+
+                <div class="mobile-auction-row">
+
+            <span>Turn</span>
+
+            <strong>${turn}</strong>
+
+        </div>
+
+                <div class="mobile-auction-status">
+
+            ${
+                game.status.gameOver
+                    ? "Game Over"
+                    : `${turn}'s Turn`
+            }
+
+        </div>
+
+        <div class="mobile-bid-section">
+
+    <input
+        id="mobileBidInput"
+        class="mobile-bid-input"
+        type="number"
+        min="${game.auction.currentBid + 1}"
+        value="${game.auction.currentBid + 1}"
+    >
+
+    <button
+        id="mobileBidButton"
+        class="mobile-bid-button"
+    >
+
+        Place Bid
+
+    </button>
+
+</div>
+
+<button
+    id="mobilePassButton"
+    class="mobile-pass-button"
+    ${game.status.gameOver ? "disabled" : ""}
+>
+
+    Pass
+
+</button>
+
+    `;
+
+    const mobilePassButton =
+        document.getElementById("mobilePassButton");
+
+    if (mobilePassButton) {
+
+        mobilePassButton.addEventListener("click", () => {
+
+            document
+                .getElementById("passButton")
+                ?.click();
+
+        });
+
+    }
+
+const mobileBidButton =
+    document.getElementById("mobileBidButton");
+
+if (mobileBidButton) {
+
+    mobileBidButton.addEventListener("click", () => {
+
+        const mobileInput =
+            document.getElementById("mobileBidInput");
+
+        const desktopInput =
+            document.getElementById("bidAmount");
+
+        if (!mobileInput || !desktopInput) return;
+
+        desktopInput.value = mobileInput.value;
+
+        document
+            .getElementById("bidButton")
+            ?.click();
+
+    });
+
+}
 
 }

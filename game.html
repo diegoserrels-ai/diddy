@@ -32,7 +32,7 @@
 
         </header>
 
-        <main class="game-board">
+        <main class="game-board desktop-board">
 
             <!-- PLAYER 1 -->
 
@@ -275,7 +275,62 @@
 
         </main>
 
-        <footer class="game-footer">
+<div class="mobile-game-area">
+
+    <div
+        id="mobileAuctionPanel"
+        class="mobile-auction-panel"
+    >
+
+        </div>
+
+</div>
+
+    <div class="mobile-player-area">
+
+    <div id="mobilePlayerContainer">
+
+    <div class="mobile-player-card">
+
+        <div class="mobile-player-top">
+
+            <div class="mobile-player-name">
+
+                Diego
+
+            </div>
+
+            <div class="mobile-player-money">
+
+                💰 $82
+
+            </div>
+
+        </div>
+
+        <div class="mobile-player-bottom">
+
+            <div>
+
+                Roster 3 / 5
+
+            </div>
+
+            <div>
+
+                ▼
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+</div>
+
+<footer class="game-footer">
 
             <div
                 id="gameMessage"
@@ -295,12 +350,154 @@
 
         </footer>
 
+<div class="mobile-layout">
+
+    <!-- Mobile Header -->
+    <header class="mobile-header">
+
+        <div class="mobile-title">
+
+            <h1>Auction Draft Debate</h1>
+
+        </div>
+
+        <div class="mobile-game-info">
+
+            <div id="mobileCategory">
+                Loading...
+            </div>
+
+            <div id="mobileCategoryMode">
+                Loading...
+            </div>
+
+            <div id="mobileRosterSize">
+                Loading...
+            </div>
+
+        </div>
+
+    </header>
+
+    <!-- Mobile Auction -->
+    <section class="mobile-auction">
+
+    <div class="mobile-auction-banner">
+
+        🔥 NOW AUCTIONING
+
     </div>
 
-    <script
-        type="module"
-        src="js/auctionEngine.js">
-    </script>
+    <div
+        id="mobileCurrentItem"
+        class="mobile-current-item">
+
+        Loading...
+
+    </div>
+
+    <div class="mobile-auction-info">
+
+        <div class="mobile-info-card">
+
+            <span class="label">
+
+                Current Bid
+
+            </span>
+
+            <div id="mobileCurrentBid">
+
+                $0
+
+            </div>
+
+        </div>
+
+        <div class="mobile-info-card">
+
+            <span class="label">
+
+                Leading Bidder
+
+            </span>
+
+            <div id="mobileCurrentBidder">
+
+                None
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div id="mobileTurnDisplay">
+
+        Waiting...
+
+    </div>
+
+    <div class="mobile-bid-controls">
+
+        <input
+            id="mobileBidAmount"
+            type="number"
+            min="1"
+            step="1"
+            placeholder="Enter bid">
+
+        <button
+            id="mobileBidButton">
+
+            PLACE BID
+
+        </button>
+
+        <button
+            id="mobilePassButton">
+
+            PASS
+
+        </button>
+
+    </div>
+
+</section>
+
+    <!-- Player 1 Summary -->
+    <section class="mobile-player-summary" id="mobilePlayer1">
+
+        Player 1 Summary
+
+    </section>
+
+    <!-- Player 2 Summary -->
+    <section class="mobile-player-summary" id="mobilePlayer2">
+
+        Player 2 Summary
+
+    </section>
+
+    <!-- Mobile Message -->
+    <footer class="mobile-footer">
+
+        <div id="mobileGameMessage">
+
+            Waiting...
+
+        </div>
+
+    </footer>
+
+</div>
+
+</div>
+
+<script
+    type="module"
+    src="js/auctionEngine.js">
+</script>
 
 </body>
 
