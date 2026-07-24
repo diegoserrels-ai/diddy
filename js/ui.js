@@ -398,7 +398,7 @@ if (
 <div class="mobile-player-status">
 
     ${
-        game.currentBidder === index + 1
+        game.auction.highestBidder === index + 1
             ? `<span class="status-pill active">Current Bidder</span>`
             : ""
     }

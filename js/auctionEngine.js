@@ -170,7 +170,9 @@ bidBox.select();
 
     checkZeroDollarOpening();
 
-    updateActionButtons();
+updateActionButtons();
+
+refreshUI();
 }
 
 

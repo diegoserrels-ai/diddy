@@ -368,7 +368,7 @@ button:hover{
 
 .mobile-player-area {
 
-    display: block;
+    display: none;
 
     padding: 16px;
 
@@ -558,6 +558,16 @@ button:hover{
 
     cursor: pointer;
 
+    user-select: none;
+
+    transition: opacity .15s ease;
+
+}
+
+.mobile-player-header:active {
+
+    opacity: .7;
+
 }
 
 .mobile-expand-icon {
@@ -565,6 +575,20 @@ button:hover{
     font-size: .9rem;
 
     opacity: .8;
+
+}
+
+.mobile-player-roster {
+
+    display: none;
+
+    margin-top: 14px;
+
+}
+
+.mobile-player-roster.expanded {
+
+    display: block;
 
 }
 
@@ -1879,13 +1903,19 @@ input::selection{
 
 @media (max-width: 768px) {
 
-    .desktop-board {
+.desktop-board {
 
-        display: none;
+    display: none;
 
-    }
+}
 
-    .mobile-game-area {
+.mobile-game-area {
+
+    display: block;
+
+}
+
+.mobile-player-area {
 
     display: block;
 
