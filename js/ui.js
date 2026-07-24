@@ -252,6 +252,8 @@ export function showAuctionNotification(
     item
 ) {
 
+    // ---------- Desktop ----------
+
     document.getElementById("notificationTitle").textContent =
         title;
 
@@ -267,20 +269,52 @@ export function showAuctionNotification(
     document
         .getElementById("auctionNotification")
         .classList.add("show");
-        document.getElementById("bidButton").disabled = true;
-document.getElementById("passButton").disabled = true;
-document.getElementById("bidAmount").disabled = true;
+
+    // ---------- Mobile ----------
+
+    const mobile =
+        document.getElementById("mobileAuctionNotification");
+
+    if (mobile) {
+
+        document.getElementById("mobileNotificationTitle").textContent =
+            title;
+
+        document.getElementById("mobileNotificationPlayer").textContent =
+            playerText;
+
+        document.getElementById("mobileNotificationAmount").textContent =
+            amount;
+
+        document.getElementById("mobileNotificationItem").textContent =
+            item;
+
+        mobile.classList.add("show");
+
+    }
+
+    document.getElementById("bidButton").disabled = true;
+    document.getElementById("passButton").disabled = true;
+    document.getElementById("bidAmount").disabled = true;
+
 }
 
 export function hideAuctionNotification() {
 
     document
         .getElementById("auctionNotification")
-        .classList.remove("show");
+        ?.classList.remove("show");
+
+    document
+        .getElementById("mobileAuctionNotification")
+        ?.classList.remove("show");
+
     document.getElementById("bidButton").disabled = false;
-document.getElementById("passButton").disabled = false;
-document.getElementById("bidAmount").disabled = false;
+    document.getElementById("passButton").disabled = false;
+    document.getElementById("bidAmount").disabled = false;
+
 }
+
 // =========================
 // FULL REFRESH
 // =========================
@@ -370,19 +404,19 @@ if (
 
             <div class="mobile-player-top">
 
-                <div class="mobile-player-name">
+    <div class="mobile-player-name">
 
-                    ${player.name}
+        ${game.auction.currentTurn === index + 1 ? "🟢 " : ""}${player.name}
 
-                </div>
+    </div>
 
-                <div class="mobile-player-money">
+    <div class="mobile-player-money">
 
-                    $${player.money}
+        💰 $${player.money}
 
-                </div>
+    </div>
 
-            </div>
+</div>
 
             <div class="mobile-player-category">
 
@@ -399,7 +433,7 @@ if (
 
     ${
         game.auction.highestBidder === index + 1
-            ? `<span class="status-pill active">Current Bidder</span>`
+            ? `<span class="status-pill bidder">Current Bidder</span>`
             : ""
     }
 
@@ -417,21 +451,31 @@ if (
 
 </div>
 
-            <div class="mobile-player-bottom">
+            <div class="mobile-player-divider"></div>
 
-                <span>
+<div class="mobile-player-bottom">
 
-                    Roster ${player.roster.length}/${game.settings.rosterSize}
+    <div class="mobile-roster-label">
 
-                </span>
+        <span>Roster</span>
 
-                <div class="mobile-expand-icon">
+        <strong>
 
-                    ${expanded ? "▲" : "▼"}
+            ${player.roster.length}/${game.settings.rosterSize}
 
-                </div>
+        </strong>
 
-            </div>
+    </div>
+
+    <div class="mobile-expand-icon">
+
+        <span class="mobile-expand-icon ${expanded ? "expanded" : ""}">
+    ▼
+</span>
+
+    </div>
+
+</div>
 
         </div>
 
@@ -559,29 +603,33 @@ function updateMobileAuctionPanel() {
 
         </div>
 
-        <div class="mobile-auction-row">
+        <div class="mobile-current-bid-label">
 
-            <span>Current Bid</span>
+    Current Bid
 
-            <strong>$${game.auction.currentBid}</strong>
+</div>
 
-        </div>
+<div class="mobile-current-bid">
 
-        <div class="mobile-auction-row">
+    $${game.auction.currentBid}
 
-            <span>Leader</span>
+</div>
 
-            <strong>${leader}</strong>
+        <div class="mobile-auction-status-row">
 
-        </div>
+    <div class="mobile-leader-pill">
 
-                <div class="mobile-auction-row">
+        👑 ${leader} Leading
 
-            <span>Turn</span>
+    </div>
 
-            <strong>${turn}</strong>
+    <div class="mobile-turn-pill">
 
-        </div>
+        ⏱ ${turn}'s Turn
+
+    </div>
+
+</div>
 
                 <div class="mobile-auction-status">
 

@@ -91,7 +91,10 @@ button{
 
     border:none;
 
-    transition:.18s;
+    transition:
+        transform .18s,
+        box-shadow .18s,
+        filter .18s;
 
     font-weight:800;
 
@@ -366,6 +369,103 @@ button:hover{
    GAME LAYOUT
 ===================================================== */
 
+.mobile-auction-wrapper {
+
+    position: relative;
+
+}
+
+.mobile-auction-notification {
+
+    position: absolute;
+
+    inset: 0;
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+
+    align-items: center;
+
+    gap: 10px;
+
+    padding: 24px;
+
+    border-radius: 14px;
+
+    background: rgba(10,15,25,.96);
+
+    opacity: 0;
+
+    visibility: hidden;
+
+    transition: opacity .25s ease, transform .25s ease;
+transform: translateY(8px);
+
+    z-index: 20;
+
+    text-align: center;
+
+}
+
+.mobile-auction-notification.show {
+
+    opacity: 1;
+
+    visibility: visible;
+
+    transform: translateY(0);
+
+}
+
+#mobileNotificationTitle {
+
+    font-size: 1.4rem;
+
+    font-weight: 800;
+
+    color: var(--gold);
+
+}
+
+#mobileNotificationPlayer {
+
+    font-size: 1.15rem;
+
+    font-weight: 700;
+
+}
+
+#mobileNotificationAmount {
+
+    font-size: 2.4rem;
+
+    font-weight: 900;
+
+    color: var(--green);
+
+}
+
+#mobileNotificationItem {
+
+    font-size: 1rem;
+
+    opacity: .9;
+
+}
+
+.mobile-player-divider {
+
+    height: 1px;
+
+    margin: 14px 0;
+
+    background: rgba(255,255,255,.08);
+
+}
+
 .mobile-player-area {
 
     display: none;
@@ -380,49 +480,71 @@ button:hover{
 
     flex-wrap: wrap;
 
-    gap: 6px;
+    gap: 8px;
 
-    margin-bottom: 12px;
+    margin-top: 10px;
 
 }
 
 .status-pill {
 
-    font-size: .75rem;
+    display: inline-flex;
 
-    font-weight: 600;
+    align-items: center;
 
-    padding: 4px 8px;
+    justify-content: center;
+
+    padding: 5px 10px;
 
     border-radius: 999px;
 
-    background: #555;
+    font-size: .75rem;
 
-    color: white;
+    font-weight: 700;
+
+    letter-spacing: .2px;
 
 }
 
-.status-pill.active {
+.status-pill.bidder {
 
-    background: #1976d2;
+    background: rgba(255, 193, 7, .18);
+
+    color: #FFD54F;
+
+    border: 1px solid rgba(255, 193, 7, .35);
 
 }
 
 .status-pill.turn {
 
-    background: #2e7d32;
+    background: rgba(76, 175, 80, .18);
+
+    color: #81C784;
+
+    border: 1px solid rgba(76, 175, 80, .35);
+
+    animation: pillPulse 2.5s ease-in-out infinite;
 
 }
 
 .status-pill.complete {
 
-    background: #6a1b9a;
+    background: rgba(156, 39, 176, .18);
+
+    color: #CE93D8;
+
+    border: 1px solid rgba(156, 39, 176, .35);
 
 }
 
 .status-pill.danger {
 
-    background: #c62828;
+    background: rgba(244, 67, 54, .18);
+
+    color: #EF9A9A;
+
+    border: 1px solid rgba(244, 67, 54, .35);
 
 }
 
@@ -484,21 +606,41 @@ button:hover{
 
 }
 
-.mobile-player-card{
+.mobile-player-card {
 
-    background:#222;
+    background: linear-gradient(
+        180deg,
+        #20252d,
+        #181c22
+    );
 
-    border-radius:12px;
+    border: 1px solid #343b46;
 
-    padding:14px;
+    border-radius: 18px;
+
+    overflow: hidden;
+
+    margin-bottom: 16px;
+
+    box-shadow:
+        0 6px 18px rgba(0,0,0,.30);
+
+    transition:
+        transform .18s ease,
+        box-shadow .18s ease,
+        border-color .18s ease;
 
 }
 
 .mobile-player-card.active {
 
-    border-color: #4caf50;
+    border-color: var(--gold);
 
-    box-shadow: 0 0 18px rgba(76, 175, 80, .45);
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 0 0 3px rgba(255,194,14,.25),
+        0 10px 24px rgba(0,0,0,.45);
 
 }
 
@@ -528,29 +670,68 @@ button:hover{
 
 }
 
-.mobile-player-name{
-
-    font-weight:700;
-
-    font-size:1.1rem;
-
-}
-
 .mobile-player-money{
 
-    font-weight:700;
+    display: inline-flex;
 
-    font-size:1rem;
+    align-items: center;
+
+    justify-content: center;
+
+    padding: 6px 12px;
+
+    border-radius: 999px;
+
+    background: rgba(255,255,255,.08);
+
+    font-weight: 700;
+
+    font-size: 1rem;
+
+    transition:
+        background .2s ease,
+        color .2s ease,
+        box-shadow .2s ease;
 
 }
 
-.mobile-player-bottom{
+.mobile-player-card.active .mobile-player-money{
 
-    display:flex;
+    background: rgba(255,193,7,.22);
 
-    justify-content:space-between;
+    color: #FFE082;
 
-    opacity:.85;
+    box-shadow: 0 0 12px rgba(255,193,7,.20);
+
+}
+
+.mobile-player-bottom {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+}
+
+.mobile-roster-label {
+
+    display: flex;
+
+    gap: 10px;
+
+    align-items: center;
+
+    font-size: .95rem;
+
+}
+
+.mobile-roster-label strong {
+
+    font-size: 1rem;
+
+    font-weight: 700;
 
 }
 
@@ -560,7 +741,15 @@ button:hover{
 
     user-select: none;
 
-    transition: opacity .15s ease;
+    transition:
+        opacity .15s ease,
+        transform .15s ease;
+
+}
+
+.mobile-player-header:active {
+
+    transform: scale(.985);
 
 }
 
@@ -572,9 +761,23 @@ button:hover{
 
 .mobile-expand-icon {
 
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
     font-size: .9rem;
 
     opacity: .8;
+
+    transition: transform .2s ease;
+
+}
+
+.mobile-expand-icon.expanded {
+
+    transform: rotate(180deg);
 
 }
 
@@ -592,68 +795,6 @@ button:hover{
 
 }
 
-.mobile-layout {
-
-    display: none;
-
-}
-
-.mobile-header {
-
-    display: flex;
-
-    justify-content: space-between;
-
-    align-items: flex-start;
-
-    padding: 16px;
-
-    border-bottom: 1px solid rgba(255,255,255,.1);
-
-}
-
-.mobile-title h1 {
-
-    margin: 0;
-
-    font-size: 1.25rem;
-
-    line-height: 1.2;
-
-}
-
-.mobile-game-info {
-
-    text-align: right;
-
-    display: flex;
-
-    flex-direction: column;
-
-    gap: 4px;
-
-    font-size: .85rem;
-
-    opacity: .9;
-
-}
-
-.mobile-auction {
-
-    padding: 16px;
-
-}
-
-.mobile-auction-banner {
-
-    font-weight: 700;
-
-    text-align: center;
-
-    margin-bottom: 12px;
-
-}
-
 .mobile-auction-title {
 
     font-size: 1.2rem;
@@ -666,11 +807,41 @@ button:hover{
 
 .mobile-auction-player {
 
-    font-size: 1.4rem;
+    font-size: 1.8rem;
 
-    font-weight: bold;
+    font-weight: 800;
 
-    margin-bottom: 18px;
+    text-align: center;
+
+    margin: 18px 0 6px;
+
+    letter-spacing: -.5px;
+
+}
+
+.mobile-current-bid-label {
+
+    text-align: center;
+
+    opacity: .65;
+
+    font-size: .85rem;
+
+    margin-top: 8px;
+
+}
+
+.mobile-current-bid {
+
+    text-align: center;
+
+    font-size: 2.8rem;
+
+    font-weight: 900;
+
+    color: var(--gold);
+
+    margin-bottom: 16px;
 
 }
 
@@ -680,47 +851,73 @@ button:hover{
 
     justify-content: space-between;
 
-    padding: 8px 0;
+    align-items: center;
 
-    border-top: 1px solid #444;
+    padding: 10px 0;
+
+    border-top: 1px solid rgba(255,255,255,.08);
 
 }
 
 .mobile-pass-button {
 
-    width: 100%;
+    margin-top: 14px;
 
-    margin-top: 16px;
+    height: 48px;
 
-    padding: 12px;
-
-    font-size: 1rem;
-
-    font-weight: bold;
-
-    border: none;
-
-    border-radius: 10px;
-
-    cursor: pointer;
-
-}
-
-.mobile-auction-status {
-
-    margin-top: 18px;
-
-    margin-bottom: 14px;
-
-    padding-top: 14px;
-
-    border-top: 1px solid #444;
-
-    text-align: center;
+    border-radius: 12px;
 
     font-size: .95rem;
 
-    font-weight: 600;
+    font-weight: 700;
+
+}
+
+.mobile-auction-status-row {
+
+    display: flex;
+
+    gap: 10px;
+
+    margin: 18px 0;
+
+}
+
+.mobile-leader-pill,
+
+.mobile-turn-pill {
+
+    flex: 1;
+
+    text-align: center;
+
+    padding: 10px;
+
+    border-radius: 12px;
+
+    font-size: .85rem;
+
+    font-weight: 700;
+
+}
+
+.mobile-leader-pill {
+
+    background: rgba(255,193,7,.18);
+
+    color: #FFD54F;
+
+    border: 1px solid rgba(255,193,7,.30);
+
+}
+
+.mobile-turn-pill {
+
+    background: rgba(33,150,243,.18);
+
+    color: #64B5F6;
+
+    border: 1px solid rgba(33,150,243,.30);
 
 }
 
@@ -730,7 +927,7 @@ button:hover{
 
     gap: 10px;
 
-    margin: 16px 0;
+    margin-top: 18px;
 
 }
 
@@ -738,49 +935,45 @@ button:hover{
 
     flex: 1;
 
-    padding: 10px;
+    height: 52px;
+
+    border-radius: 12px;
+
+    padding: 0 14px;
 
     font-size: 1rem;
 
-    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,.12);
 
-    border: 1px solid #555;
+    background: #242933;
+
+    color: white;
 
 }
 
 .mobile-bid-button {
 
-    padding: 10px 16px;
+    width: 110px;
 
-    font-weight: bold;
-
-    border: none;
-
-    border-radius: 8px;
-
-    cursor: pointer;
-
-}
-
-.mobile-current-item {
-
-    font-size: 1.4rem;
+    border-radius: 12px;
 
     font-weight: 700;
 
-    text-align: center;
-
-    margin-bottom: 16px;
+    font-size: .95rem;
 
 }
 
-.mobile-auction-info {
+.mobile-bid-button:hover,
+.mobile-pass-button:hover {
 
-    display: flex;
+    transform: translateY(-2px);
 
-    gap: 12px;
+}
 
-    margin-bottom: 16px;
+.mobile-bid-button:active,
+.mobile-pass-button:active {
+
+    transform: scale(.97);
 
 }
 
@@ -792,42 +985,57 @@ button:hover{
 
 .mobile-auction-panel {
 
-    background: #2d2d2d;
+    background: linear-gradient(
+        180deg,
+        #232933,
+        #1b2028
+    );
 
-    border: 1px solid #444;
+    border: 1px solid #343b46;
 
-    border-radius: 14px;
+    border-radius: 18px;
 
-    padding: 18px;
+    padding: 20px;
 
-    margin-bottom: 18px;
+    box-shadow:
 
-    color: white;
-
-}
-
-.mobile-info-card {
-
-    flex: 1;
-
-    text-align: center;
+        0 8px 24px rgba(0,0,0,.35);
 
 }
 
-.mobile-bid-controls {
+@keyframes mobileCardFade {
 
-    display: flex;
+    from {
 
-    flex-direction: column;
+        opacity: 0;
 
-    gap: 10px;
+        transform: translateY(12px);
+
+    }
+
+    to {
+
+        opacity: 1;
+
+        transform: translateY(0);
+
+    }
 
 }
 
-.mobile-bid-controls input,
-.mobile-bid-controls button {
+@keyframes pillPulse {
 
-    width: 100%;
+    0%,100% {
+
+        transform: scale(1);
+
+    }
+
+    50% {
+
+        transform: scale(1.05);
+
+    }
 
 }
 
@@ -931,8 +1139,6 @@ button:hover{
     border:2px solid rgba(255,255,255,.05);
 
     box-shadow:var(--shadow);
-
-    transition:.2s;
 
 }
 
@@ -1368,15 +1574,6 @@ select{
         border-color .18s,
         box-shadow .18s,
         background .18s;
-
-}
-
-button{
-
-    transition:
-        transform .18s,
-        box-shadow .18s,
-        filter .18s;
 
 }
 
@@ -1830,96 +2027,6 @@ input::selection{
     max-width: 90%;
 
     line-height: 1.25;
-
-}
-
-/* =========================
-   MOBILE PLAYER CARDS
-========================= */
-
-.mobile-player-card {
-
-    background: #2d2d2d;
-
-    border: 1px solid #4a4a4a;
-
-    border-radius: 14px;
-
-    padding: 16px;
-
-    color: white;
-
-    box-shadow: 0 2px 8px rgba(0,0,0,.25);
-
-}
-
-.mobile-player-top {
-
-    display: flex;
-
-    justify-content: space-between;
-
-    align-items: center;
-
-    margin-bottom: 10px;
-
-}
-
-.mobile-player-top {
-
-    border-bottom: 1px solid #444;
-
-    padding-bottom: 12px;
-
-    margin-bottom: 12px;
-
-}
-
-.mobile-player-name {
-
-    font-size: 1.1rem;
-
-    font-weight: bold;
-
-}
-
-.mobile-player-money {
-
-    color: #62d26f;
-
-    font-size: 1.1rem;
-
-    font-weight: 700;
-
-}
-
-.mobile-player-bottom {
-
-    font-size: .9rem;
-
-    opacity: .85;
-
-}
-
-@media (max-width: 768px) {
-
-.desktop-board {
-
-    display: none;
-
-}
-
-.mobile-game-area {
-
-    display: block;
-
-}
-
-.mobile-player-area {
-
-    display: block;
-
-}
 
 }
 
