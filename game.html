@@ -1,343 +1,133 @@
+
+
+Game · HTML
 <!DOCTYPE html>
 <html lang="en">
-
+ 
 <head>
-
+ 
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#09111f">
+ 
     <title>Auction Draft Debate</title>
-
+ 
     <link rel="stylesheet" href="css/style.css">
-
+ 
 </head>
-
+ 
 <body>
-
-    <div class="game-container">
-
-        <header class="game-header">
-
-            <h1>Auction Draft Debate</h1>
-
-            <div class="category-pill">
-
-                <span>Category</span>
-
-                <h2 id="gameCategory">
-                    Loading...
-                </h2>
-
+ 
+<div class="game-container">
+ 
+    <header class="topbar">
+ 
+        <h1>Auction Draft Debate</h1>
+ 
+        <div class="category-pill">
+ 
+            <span class="cp-label">Category</span>
+ 
+            <span class="cp-name" id="categoryName">Loading</span>
+ 
+            <span class="cp-meta" id="categoryMeta"></span>
+ 
+        </div>
+ 
+    </header>
+ 
+ 
+    <!-- Player cards are added here by js/ui.js -->
+ 
+    <main class="board" id="board" data-count="2">
+ 
+        <section class="auction" id="auctionArea">
+ 
+            <div class="auction-banner">Now auctioning</div>
+ 
+            <div id="currentItem">Loading...</div>
+ 
+            <div class="stat-row">
+ 
+                <div class="stat">
+ 
+                    <span class="stat-label">Current bid</span>
+ 
+                    <span class="stat-value gold" id="currentBid">$0</span>
+ 
+                </div>
+ 
+                <div class="stat">
+ 
+                    <span class="stat-label">Leading</span>
+ 
+                    <span class="stat-value" id="currentBidder">None</span>
+ 
+                </div>
+ 
             </div>
-
-        </header>
-
-        <main class="game-board desktop-board">
-
-            <!-- PLAYER 1 -->
-
-            <aside class="player-card" id="player1Card">
-
-                <div class="player-header">
-
-                    <h2 id="player1Title">
-                        Player 1
-                    </h2>
-
-                </div>
-
-                <div class="money-box">
-
-                    <div class="label">
-                        💰 BANK
-                    </div>
-
-                    <div id="player1Money" class="money">
-                        $0
-                    </div>
-
-                </div>
-
-                <div class="roster-box">
-
-                    <div class="label">
-                        ⭐ ROSTER
-                    </div>
-
-                    <ul id="player1Roster"></ul>
-
-                </div>
-
-                <button
-    id="player1SkipButton"
-    class="skip-button">
-
-    <div class="skip-title">
-
-        🚫 Neither Knows
-
-    </div>
-
-    <div
-        id="skipVotes1"
-        class="skip-votes">
-
-        0 / 2
-
-    </div>
-
-    <div
-        id="skipRemaining1"
-        class="skip-remaining">
-
-        0 Remaining
-
-    </div>
-
-</button>
-
-            </aside>
-
-            <!-- AUCTION -->
-
-<section class="auction-area">
-
-    <div class="auction-banner">
-    🔥 NOW AUCTIONING 🔥
-</div>
-
-<div
-    id="auctionNotification"
-    class="auction-notification hidden">
-
-    <div
-        id="notificationTitle"
-        class="notification-title">
-
-        BID
-
-    </div>
-
-    <div
-        id="notificationPlayer"
-        class="notification-player">
-
-        Player 1
-
-    </div>
-
-    <div
-        id="notificationAmount"
-        class="notification-amount">
-
-        $250
-
-    </div>
-
-    <div
-        id="notificationItem"
-        class="notification-item">
-
-        LeBron James
-
-    </div>
-
-</div>
-
-<div id="currentItem">
-    Loading...
-</div>
-
-                <div class="auction-info">
-
-                    <div class="info-card">
-
-                        <span class="label">
-                            Current Bid
-                        </span>
-
-                        <div id="currentBid">
-                            $0
-                        </div>
-
-                    </div>
-
-                    <div class="info-card">
-
-                        <span class="label">
-                            Leading Bidder
-                        </span>
-
-                        <div id="currentBidder">
-                            None
-                        </div>
-
-                    </div>
-
-                </div>
-
-                <div id="turnDisplay">
-                    Waiting...
-                </div>
-
-                <div class="bid-controls">
-
-                    <input
-                        id="bidAmount"
-                        type="number"
-                        min="1"
-                        step="1"
-                        placeholder="Enter bid">
-
-                    <button
-                        id="bidButton"
-                        onclick="placeBid()">
-
-                        PLACE BID
-
-                    </button>
-
-                    <button
-                        id="passButton"
-                        onclick="passBid()">
-
-                        PASS
-
-                    </button>
-
-                </div>
-
-            </section>
-
-            <!-- PLAYER 2 -->
-
-            <aside class="player-card" id="player2Card">
-
-                <div class="player-header">
-
-                    <h2 id="player2Title">
-                        Player 2
-                    </h2>
-
-                </div>
-
-                <div class="money-box">
-
-                    <div class="label">
-                        💰 BANK
-                    </div>
-
-                    <div id="player2Money" class="money">
-                        $0
-                    </div>
-
-                </div>
-
-                <div class="roster-box">
-
-                    <div class="label">
-                        ⭐ ROSTER
-                    </div>
-
-                    <ul id="player2Roster"></ul>
-
-                </div>
-
-                <button
-    id="player2SkipButton"
-    class="skip-button">
-
-    <div class="skip-title">
-
-        🚫 Neither Knows
-
-    </div>
-
-    <div
-        id="skipVotes2"
-        class="skip-votes">
-
-        0 / 2
-
-    </div>
-
-    <div
-        id="skipRemaining2"
-        class="skip-remaining">
-
-        0 Remaining
-
-    </div>
-
-</button>
-
-            </aside>
-
-        </main>
-
-<div class="mobile-game-area">
-
-    <div class="mobile-auction-wrapper">
-
-    <div
-        id="mobileAuctionNotification"
-        class="mobile-auction-notification"
-    >
-
-        <div id="mobileNotificationTitle"></div>
-
-        <div id="mobileNotificationPlayer"></div>
-
-        <div id="mobileNotificationAmount"></div>
-
-        <div id="mobileNotificationItem"></div>
-
-    </div>
-
-    <div
-        id="mobileAuctionPanel"
-        class="mobile-auction-panel"
-    >
-
-    </div>
-
-</div>
-
-</div>
-
-    <div class="mobile-player-area">
-
-<div id="mobilePlayerContainer"></div>
-
-</div>
-
-</div>
-
-<footer class="game-footer">
-
-            <div
-                id="gameMessage"
-                class="message-bar">
-
-                Waiting...
-
+ 
+            <div id="turnDisplay">Waiting...</div>
+ 
+            <div class="bid-controls">
+ 
+                <input
+                    id="bidAmount"
+                    type="number"
+                    inputmode="numeric"
+                    min="1"
+                    step="1"
+                    placeholder="Bid">
+ 
+                <button id="bidButton" type="button">Bid</button>
+ 
+                <button id="passButton" type="button">Pass</button>
+ 
             </div>
-
-            <button
-                class="new-game-button"
-                onclick="location.href='index.html'">
-
-                New Game
-
-            </button>
-
-        </footer>
-
-<script
-    type="module"
-    src="js/auctionEngine.js">
-</script>
-
+ 
+            <div class="skip-bar" id="skipBar">
+ 
+                <div class="skip-head">
+ 
+                    <span class="skip-title">Neither knows</span>
+ 
+                    <span class="skip-meta" id="skipMeta"></span>
+ 
+                </div>
+ 
+                <div class="skip-chips" id="skipChips"></div>
+ 
+            </div>
+ 
+            <div class="notification" id="notification">
+ 
+                <div class="notif-title" id="notifTitle"></div>
+ 
+                <div class="notif-player" id="notifPlayer"></div>
+ 
+                <div class="notif-amount" id="notifAmount"></div>
+ 
+                <div class="notif-item" id="notifItem"></div>
+ 
+            </div>
+ 
+        </section>
+ 
+    </main>
+ 
+ 
+    <footer class="game-footer">
+ 
+        <div class="message-bar" id="gameMessage">Waiting...</div>
+ 
+        <a class="new-game-button" href="index.html">New game</a>
+ 
+    </footer>
+ 
+</div>
+ 
+<script type="module" src="js/auctionEngine.js"></script>
+ 
 </body>
-
 </html>
+ 

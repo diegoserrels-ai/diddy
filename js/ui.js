@@ -1,716 +1,394 @@
 // =========================
-// AUCTION DEBATE GAME
-// UI MODULE
-// VERSION 1.2
+// AUCTION DRAFT DEBATE
+// UI
+// VERSION 3.0
 // =========================
+//
+// There is now ONE layout instead of a separate mobile copy.
+// The stylesheet reshapes it for phones, so anything drawn here
+// shows up on both. Nothing in this file knows about screen size.
 
 import { game } from "./gameState.js";
-let expandedMobilePlayers = new Set();
+
+
+// Which roster lists the players have tapped open (phone only).
+const openRosters = new Set();
+
+// Filled in by auctionEngine so a tapped name can cast a skip vote.
+let onSkipVote = () => {};
+
+export function setSkipVoteHandler(handler) {
+    onSkipVote = handler;
+}
+
+
+function el(id) {
+    return document.getElementById(id);
+}
+
 
 
 // =========================
-// PLAYER NAMES
+// HEADER
 // =========================
 
-export function updatePlayerNames() {
+export function updateCategoryPill() {
 
-    game.players.forEach((player, index) => {
+    const s = game.settings;
 
-        const title = document.getElementById(
-            `player${index + 1}Title`
+    el("categoryName").textContent = s.category;
+
+    const parts = [];
+
+    if (s.sportsMode) {
+
+        parts.push(
+            s.sportsMode === "current" ? "Current" : "All-Time"
         );
-
-        if (title) {
-
-            title.textContent = player.name;
-
-        }
-
-    });
-
-}
-
-
-
-// =========================
-// CATEGORY
-// =========================
-
-export function updateCategory() {
-
-    document.getElementById("gameCategory").textContent =
-        game.settings.category;
-
-}
-
-
-
-// =========================
-// MONEY
-// =========================
-
-export function updateMoney() {
-
-    game.players.forEach((player, index) => {
-
-        const moneyElement = document.getElementById(
-            `player${index + 1}Money`
-        );
-
-        if (moneyElement) {
-
-            moneyElement.textContent = `$${player.money}`;
-
-        }
-
-    });
-
-}
-
-
-
-// =========================
-// ROSTERS
-// =========================
-
-export function updateRosters() {
-
-    game.players.forEach((player, index) => {
-
-        drawRoster(
-
-            `player${index + 1}Roster`,
-
-            player.roster
-
-        );
-
-    });
-
-}
-
-
-
-function drawRoster(id, roster) {
-
-    const list =
-        document.getElementById(id);
-
-    list.innerHTML = "";
-
-    roster.forEach(item => {
-
-        const li =
-            document.createElement("li");
-
-        li.textContent =
-            `${item.name} ($${item.price ?? 0})`;
-
-        list.appendChild(li);
-
-    });
-
-}
-
-
-
-// =========================
-// CURRENT ITEM
-// =========================
-
-export function updateCurrentItem() {
-
-    document.getElementById("currentItem").textContent =
-
-        game.auction.currentItem
-            ? game.auction.currentItem.name
-            : "Loading...";
-
-}
-
-
-
-// =========================
-// CURRENT BID
-// =========================
-
-export function updateBid() {
-
-    document.getElementById("currentBid").textContent =
-        `$${game.auction.currentBid}`;
-
-}
-
-
-
-// =========================
-// CURRENT BIDDER
-// =========================
-
-export function updateLeader() {
-
-    let text = "None";
-
-    if (game.auction.highestBidder === 1) {
-
-        text = game.player1.name;
-
-    }
-    else if (game.auction.highestBidder === 2) {
-
-        text = game.player2.name;
 
     }
 
-    document.getElementById("currentBidder").textContent =
-        text;
+    parts.push(
+        `${s.rosterSize} ${s.rosterSize === 1 ? "spot" : "spots"}`
+    );
+
+    parts.push(`${game.players.length} players`);
+
+    el("categoryMeta").textContent = parts.join(" · ");
 
 }
 
 
 
 // =========================
-// TURN DISPLAY
+// AUCTION PANEL
 // =========================
 
-export function updateTurn() {
+export function updateAuction() {
 
-    const player =
+    el("auctionArea").classList.toggle("is-over", game.status.gameOver);
 
-        game.auction.currentTurn === 1
-            ? game.player1
-            : game.player2;
+    el("currentItem").textContent =
+        game.status.gameOver
+            ? "Draft complete"
+            : game.auction.currentItem
+                ? game.auction.currentItem.name
+                : "Loading...";
 
-    document.getElementById("turnDisplay").textContent =
-        `${player.name}'s Turn`;
+    el("currentBid").textContent = `$${game.auction.currentBid}`;
+
+    el("currentBidder").textContent =
+        game.auction.highestBidder === null
+            ? "None"
+            : game.players[game.auction.highestBidder].name;
+
+    el("turnDisplay").textContent =
+        game.status.gameOver
+            ? "Draft complete"
+            : `${game.players[game.auction.currentTurn].name}'s turn`;
+
+}
+
+
+export function setMessage(text = "") {
+
+    el("gameMessage").textContent = text;
 
 }
 
 
 
 // =========================
-// GAME MESSAGE
+// BID CONTROLS
 // =========================
 
-export function updateMessage(message = "") {
+// Fills the bid box with the smallest legal raise so nobody
+// has to type on a phone keyboard unless they want to.
 
-    document.getElementById("gameMessage").textContent =
-        message;
+export function primeBidInput() {
+
+    const input = el("bidAmount");
+
+    const bidder = game.players[game.auction.currentTurn];
+
+    const minimum = game.auction.currentBid + 1;
+
+    input.min = minimum;
+
+    input.value = minimum <= bidder.money ? minimum : "";
 
 }
+
+
+export function setControlsEnabled(canBid, canPass) {
+
+    el("bidButton").disabled = !canBid;
+    el("passButton").disabled = !canPass;
+    el("bidAmount").disabled = !canBid;
+
+}
+
+
+export function lockControls() {
+
+    setControlsEnabled(false, false);
+
+}
+
+
 
 // =========================
 // NEITHER KNOWS
 // =========================
 
-export function updateNeitherKnows() {
+export function updateSkipBar() {
 
-    const p1 =
-        document.getElementById("player1SkipButton");
+    const nk = game.neitherKnows;
 
-    const p2 =
-        document.getElementById("player2SkipButton");
-
-    document.getElementById("skipVotes1").textContent =
-        `${game.neitherKnows.votes} / 2`;
-
-    document.getElementById("skipVotes2").textContent =
-        `${game.neitherKnows.votes} / 2`;
-
-    document.getElementById("skipRemaining1").textContent =
-        `${game.neitherKnows.remaining} Remaining`;
-
-    document.getElementById("skipRemaining2").textContent =
-        `${game.neitherKnows.remaining} Remaining`;
-
-    const disabled =
-        game.status.gameOver ||
-        game.neitherKnows.remaining <= 0;
-
-    p1.disabled = disabled;
-    p2.disabled = disabled;
-
-    p1.classList.toggle(
-        "skip-armed",
-        game.neitherKnows.votes === 1
+    const voters = game.players.filter(
+        p => p.roster.length < game.settings.rosterSize
     );
 
-    p2.classList.toggle(
-        "skip-armed",
-        game.neitherKnows.votes === 1
-    );
+    const votes = voters.filter(p => nk.votes[p.index]).length;
 
-}
-// =========================
-// AUCTION NOTIFICATION
-// =========================
+    const chips = el("skipChips");
 
-export function showAuctionNotification(
-    title,
-    playerText,
-    amount,
-    item
-) {
+    chips.innerHTML = "";
 
-    // ---------- Desktop ----------
+    const locked = game.status.gameOver || nk.remaining <= 0;
 
-    document.getElementById("notificationTitle").textContent =
-        title;
+    el("skipMeta").textContent =
+        nk.remaining <= 0
+            ? "No skips left"
+            : `${votes}/${voters.length} · ${nk.remaining} left`;
 
-    document.getElementById("notificationPlayer").textContent =
-        playerText;
+    voters.forEach(p => {
 
-    document.getElementById("notificationAmount").textContent =
-        amount;
+        const chip = document.createElement("button");
 
-    document.getElementById("notificationItem").textContent =
-        item;
+        chip.type = "button";
 
-    document
-        .getElementById("auctionNotification")
-        .classList.add("show");
+        chip.className =
+            "skip-chip" + (nk.votes[p.index] ? " voted" : "");
 
-    // ---------- Mobile ----------
+        chip.textContent = p.name;
+        chip.disabled = locked;
 
-    const mobile =
-        document.getElementById("mobileAuctionNotification");
+        chip.addEventListener("click", () => onSkipVote(p.index));
 
-    if (mobile) {
-
-        document.getElementById("mobileNotificationTitle").textContent =
-            title;
-
-        document.getElementById("mobileNotificationPlayer").textContent =
-            playerText;
-
-        document.getElementById("mobileNotificationAmount").textContent =
-            amount;
-
-        document.getElementById("mobileNotificationItem").textContent =
-            item;
-
-        mobile.classList.add("show");
-
-    }
-
-    document.getElementById("bidButton").disabled = true;
-    document.getElementById("passButton").disabled = true;
-    document.getElementById("bidAmount").disabled = true;
-
-}
-
-export function hideAuctionNotification() {
-
-    document
-        .getElementById("auctionNotification")
-        ?.classList.remove("show");
-
-    document
-        .getElementById("mobileAuctionNotification")
-        ?.classList.remove("show");
-
-    document.getElementById("bidButton").disabled = false;
-    document.getElementById("passButton").disabled = false;
-    document.getElementById("bidAmount").disabled = false;
-
-}
-
-// =========================
-// FULL REFRESH
-// =========================
-
-export function refreshUI() {
-
-    updatePlayerNames();
-    updateCategory();
-    updateMoney();
-    updateRosters();
-    updateCurrentItem();
-    updateBid();
-    updateLeader();
-    updateTurn();
-    updateNeitherKnows();
-
-    // Highlight active player
-    game.players.forEach((player, index) => {
-
-    const card = document.getElementById(
-        `player${index + 1}Card`
-    );
-
-    if (card) {
-
-        card.classList.remove("active");
-
-        if (
-            !game.status.gameOver &&
-            game.auction.currentTurn === index + 1
-        ) {
-
-            card.classList.add("active");
-
-        }
-
-    }
-
-});
-
-updateMobileUI();
-
-updateMobileAuctionPanel();
-
-}
-
-function updateMobileUI() {
-
-    const container = document.getElementById(
-        "mobilePlayerContainer"
-    );
-
-    if (!container) return;
-
-    container.innerHTML = "";
-
-    game.players.forEach((player, index) => {
-
-    container.appendChild(
-        createMobilePlayerCard(player, index)
-    );
-
-});
-
-}
-
-function createMobilePlayerCard(player, index) {
-
-    const card = document.createElement("div");
-
-    card.className = "mobile-player-card";
-
-if (
-    !game.status.gameOver &&
-    game.auction.currentTurn === index + 1
-) {
-
-    card.classList.add("active");
-
-}
-
-if (
-    !expandedMobilePlayers.size &&
-    !game.status.gameOver &&
-    game.auction.currentTurn > 0
-) {
-    expandedMobilePlayers.add(game.auction.currentTurn - 1);
-}
-
-const expanded = expandedMobilePlayers.has(index);
-
-    card.innerHTML = `
-
-        <div class="mobile-player-header">
-
-            <div class="mobile-player-top">
-
-    <div class="mobile-player-name">
-
-        ${game.auction.currentTurn === index + 1 ? "🟢 " : ""}${player.name}
-
-    </div>
-
-    <div class="mobile-player-money">
-
-        💰 $${player.money}
-
-    </div>
-
-</div>
-
-
-${
-    game.auction.highestBidder === index + 1 ||
-    player.money <= 0 ||
-    player.roster.length >= game.settings.rosterSize
-        ? `
-<div class="mobile-player-status">
-
-    ${
-        game.auction.highestBidder === index + 1
-            ? `<span class="status-pill bidder">Current Bidder</span>`
-            : ""
-    }
-
-    ${
-        player.money <= 0
-            ? `<span class="status-pill danger">No Money</span>`
-            : ""
-    }
-
-    ${
-        player.roster.length >= game.settings.rosterSize
-            ? `<span class="status-pill complete">Roster Full</span>`
-            : ""
-    }
-
-</div>
-`
-        : ""
-}
-
-<div class="mobile-player-bottom">
-
-    <div class="mobile-roster-label">
-
-        <strong>Players</strong>
-
-        <span>
-            ${player.roster.length}/${game.settings.rosterSize}
-        </span>
-
-    </div>
-
-    <span class="mobile-expand-icon">
-        ${expanded ? "▲" : "▼"}
-    </span>
-
-</div>
-
-        </div>
-
-        <div class="mobile-player-roster ${expanded ? "expanded" : ""}">
-
-            ${
-                player.roster.length
-                    ? player.roster
-                          .map(
-                              item =>
-                                  `<div class="mobile-roster-item">
-                                      ${item.name}
-                                      <span>$${item.price ?? 0}</span>
-                                   </div>`
-                          )
-                          .join("")
-                    : "<div><em>No players yet</em></div>"
-            }
-
-            <div class="mobile-neither-knows">
-
-                <button
-                    class="mobile-skip-button"
-                    ${game.status.gameOver || game.neitherKnows.remaining <= 0 ? "disabled" : ""}
-                >
-
-                    Neither Knows
-
-                </button>
-
-                <div class="mobile-skip-info">
-
-                    ${game.neitherKnows.remaining} Remaining
-
-                    •
-
-                    ${game.neitherKnows.votes}/2 Votes
-
-                </div>
-
-            </div>
-
-        </div>
-
-    `;
-
-    card.querySelector(".mobile-player-header")
-    .addEventListener("click", () => {
-
-        if (expanded) {
-
-            expandedMobilePlayers.clear();
-
-        } else {
-
-            expandedMobilePlayers.clear();
-            expandedMobilePlayers.add(index);
-
-        }
-
-        updateMobileUI();
+        chips.appendChild(chip);
 
     });
 
-    const skipButton = card.querySelector(".mobile-skip-button");
+    el("skipBar").classList.toggle("locked", locked);
 
-    if (skipButton) {
+}
 
-        skipButton.addEventListener("click", () => {
 
-            const originalButton = document.getElementById(
-                index === 0
-                    ? "player1SkipButton"
-                    : "player2SkipButton"
-            );
 
-            if (originalButton) {
+// =========================
+// PLAYER CARDS
+// =========================
 
-                originalButton.click();
+function buildPlayerCard(p) {
+
+    const card = document.createElement("aside");
+
+    card.className = "player-card";
+
+    const isTurn =
+        !game.status.gameOver &&
+        game.auction.currentTurn === p.index;
+
+    if (isTurn) card.classList.add("active");
+
+    const full = p.roster.length >= game.settings.rosterSize;
+
+    const expanded = openRosters.has(p.index);
+
+    // Status pills, capped so a phone row never wraps.
+    const pills = [];
+
+    if (game.auction.highestBidder === p.index) {
+
+        pills.push(`<span class="pill pill-lead">Leading</span>`);
+
+    }
+
+    if (full) {
+
+        pills.push(`<span class="pill pill-full">Roster full</span>`);
+
+    } else if (p.money <= 0) {
+
+        pills.push(`<span class="pill pill-broke">Out of money</span>`);
+
+    } else if (game.auction.out[p.index] && !game.status.gameOver) {
+
+        pills.push(`<span class="pill pill-out">Passed</span>`);
+
+    }
+
+    const rosterRows = p.roster.length
+
+        ? p.roster
+            .map(item => `
+                <li class="roster-item">
+                    <span>${escapeHTML(item.name)}</span>
+                    <span class="roster-price">$${item.price ?? 0}</span>
+                </li>`)
+            .join("")
+
+        : `<li class="roster-empty">No picks yet</li>`;
+
+    // On a phone the pills are hidden and these classes carry the
+    // same information through colour, which keeps each card to one line.
+    if (game.auction.highestBidder === p.index) card.classList.add("leading");
+    if (full) card.classList.add("full");
+    if (game.auction.out[p.index] && !full && !game.status.gameOver) {
+        card.classList.add("passed");
+    }
+
+    card.innerHTML = `
+
+        <button class="pc-head" type="button">
+
+            <span class="pc-line">
+
+                <span class="pc-name">
+                    ${isTurn ? `<span class="turn-dot"></span>` : ""}${escapeHTML(p.name)}
+                </span>
+
+                <span class="pc-right">
+
+                    <span class="pc-count">
+                        ${p.roster.length}/${game.settings.rosterSize}
+                    </span>
+
+                    <span class="pc-money ${p.money <= 0 ? "empty" : ""}">
+                        $${p.money}
+                    </span>
+
+                    <span class="chev ${expanded ? "open" : ""}">▾</span>
+
+                </span>
+
+            </span>
+
+            <span class="pc-pills">${pills.join("")}</span>
+
+        </button>
+
+        <ul class="pc-roster ${expanded ? "open" : ""}">
+            ${rosterRows}
+        </ul>
+    `;
+
+    card
+        .querySelector(".pc-head")
+        .addEventListener("click", () => {
+
+            if (openRosters.has(p.index)) {
+
+                openRosters.delete(p.index);
+
+            } else {
+
+                // One open at a time keeps the phone screen short.
+                openRosters.clear();
+                openRosters.add(p.index);
 
             }
 
-        });
+            renderPlayers();
 
-    }
+        });
 
     return card;
 
 }
 
-function updateMobileAuctionPanel() {
 
-    const panel = document.getElementById(
-        "mobileAuctionPanel"
-    );
+export function renderPlayers() {
 
-    if (!panel) return;
+    const board = el("board");
 
-    const leader =
-        game.auction.highestBidder === 1
-            ? game.player1.name
-            : game.auction.highestBidder === 2
-                ? game.player2.name
-                : "None";
+    board.dataset.count = game.players.length;
 
-    const turn =
-        game.auction.currentTurn === 1
-            ? game.player1.name
-            : game.player2.name;
+    board
+        .querySelectorAll(".player-card")
+        .forEach(card => card.remove());
 
-    panel.innerHTML = `
+    game.players.forEach(p => {
 
-        <div class="mobile-auction-title">
-
-            Current Auction
-
-        </div>
-
-        <div class="mobile-auction-player">
-
-            ${
-                game.auction.currentItem
-                    ? game.auction.currentItem.name
-                    : "Loading..."
-            }
-
-        </div>
-
-        <div class="mobile-current-bid-label">
-
-    Current Bid
-
-</div>
-
-<div class="mobile-current-bid">
-
-    $${game.auction.currentBid}
-
-</div>
-
-        <div class="mobile-auction-status-row">
-
-    <div class="mobile-leader-pill">
-
-        👑 ${leader} Leading
-
-    </div>
-
-    <div class="mobile-turn-pill">
-
-        ⏱ ${turn}'s Turn
-
-    </div>
-
-</div>
-
-                <div class="mobile-auction-status">
-
-            ${
-                game.status.gameOver
-                    ? "Game Over"
-                    : `${turn}'s Turn`
-            }
-
-        </div>
-
-        <div class="mobile-bid-section">
-
-    <input
-        id="mobileBidInput"
-        class="mobile-bid-input"
-        type="number"
-        min="${game.auction.currentBid + 1}"
-        value="${game.auction.currentBid + 1}"
-    >
-
-    <button
-        id="mobileBidButton"
-        class="mobile-bid-button"
-    >
-
-        Place Bid
-
-    </button>
-
-</div>
-
-<button
-    id="mobilePassButton"
-    class="mobile-pass-button"
-    ${game.status.gameOver ? "disabled" : ""}
->
-
-    Pass
-
-</button>
-
-    `;
-
-    const mobilePassButton =
-        document.getElementById("mobilePassButton");
-
-    if (mobilePassButton) {
-
-        mobilePassButton.addEventListener("click", () => {
-
-            document
-                .getElementById("passButton")
-                ?.click();
-
-        });
-
-    }
-
-const mobileBidButton =
-    document.getElementById("mobileBidButton");
-
-if (mobileBidButton) {
-
-    mobileBidButton.addEventListener("click", () => {
-
-        const mobileInput =
-            document.getElementById("mobileBidInput");
-
-        const desktopInput =
-            document.getElementById("bidAmount");
-
-        if (!mobileInput || !desktopInput) return;
-
-        desktopInput.value = mobileInput.value;
-
-        document
-            .getElementById("bidButton")
-            ?.click();
+        board.appendChild(buildPlayerCard(p));
 
     });
 
 }
+
+
+// Opened at the end of the draft so everyone can compare.
+
+export function openAllRosters() {
+
+    game.players.forEach(p => openRosters.add(p.index));
+
+    renderPlayers();
+
+}
+
+
+
+// =========================
+// SOLD / BID POPUP
+// =========================
+
+export function showNotification(title, who, amount, item) {
+
+    el("notifTitle").textContent = title;
+    el("notifPlayer").textContent = who;
+    el("notifAmount").textContent = amount;
+    el("notifItem").textContent = item;
+
+    el("notification").classList.add("show");
+
+    lockControls();
+
+}
+
+
+export function hideNotification() {
+
+    el("notification").classList.remove("show");
+
+}
+
+
+
+// =========================
+// FULL REDRAW
+// =========================
+
+export function render() {
+
+    updateCategoryPill();
+    updateAuction();
+    updateSkipBar();
+    renderPlayers();
+
+}
+
+
+
+// Item names come from your own JSON files, but escaping keeps a
+// stray < or & from breaking the page.
+
+function escapeHTML(text) {
+
+    return String(text)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
 
 }

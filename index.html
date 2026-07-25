@@ -4,7 +4,8 @@
 <head>
 
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#09111f">
 
     <title>Auction Draft Debate</title>
 
@@ -20,31 +21,45 @@
 
         <h1>Auction Draft Debate</h1>
 
-        <p class="subtitle">
-            Build your roster. Win the debate.
-        </p>
-
-        <h2>New Game</h2>
+        <p class="subtitle">Build your roster. Win the debate.</p>
 
         <div class="form-group">
 
-            <label for="player1Name">Player 1 Name</label>
+            <label>Players</label>
 
-            <input
-                id="player1Name"
-                type="text"
-                placeholder="Player 1">
+            <div class="seg" id="playerCount"></div>
 
         </div>
 
-        <div class="form-group">
+        <div class="form-group" id="playerField1">
 
-            <label for="player2Name">Player 2 Name</label>
+            <label for="player1Name">Player 1</label>
 
-            <input
-                id="player2Name"
-                type="text"
-                placeholder="Player 2">
+            <input id="player1Name" type="text" placeholder="Name" autocomplete="off">
+
+        </div>
+
+        <div class="form-group" id="playerField2">
+
+            <label for="player2Name">Player 2</label>
+
+            <input id="player2Name" type="text" placeholder="Name" autocomplete="off">
+
+        </div>
+
+        <div class="form-group" id="playerField3">
+
+            <label for="player3Name">Player 3</label>
+
+            <input id="player3Name" type="text" placeholder="Name" autocomplete="off">
+
+        </div>
+
+        <div class="form-group" id="playerField4">
+
+            <label for="player4Name">Player 4</label>
+
+            <input id="player4Name" type="text" placeholder="Name" autocomplete="off">
 
         </div>
 
@@ -52,29 +67,19 @@
 
             <label for="category">Category</label>
 
-            <select
-                id="category"
-                onchange="categoryChanged()">
-            </select>
+            <select id="category"></select>
 
         </div>
 
-        <div
-            class="form-group"
-            id="sportsModeContainer"
-            style="display:none;">
+        <div class="form-group" id="sportsModeContainer">
 
-            <label for="sportsMode">Sports Mode</label>
+            <label for="sportsMode">Era</label>
 
             <select id="sportsMode">
 
-                <option value="current">
-                    Current Players
-                </option>
+                <option value="current">Current players</option>
 
-                <option value="allTime">
-                    All-Time Players
-                </option>
+                <option value="allTime">All-time players</option>
 
             </select>
 
@@ -84,39 +89,25 @@
 
             <div class="form-group">
 
-                <label for="budget">
-                    Starting Budget
-                </label>
+                <label for="budget">Starting budget</label>
 
-                <input
-                    id="budget"
-                    type="number"
-                    min="1"
-                    value="100">
+                <input id="budget" type="number" inputmode="numeric" min="1" value="100">
 
             </div>
 
             <div class="form-group">
 
-                <label for="rosterSize">
-                    Roster Size
-                </label>
+                <label for="rosterSize">Roster size</label>
 
-                <input
-                    id="rosterSize"
-                    type="number"
-                    min="1"
-                    value="5">
+                <input id="rosterSize" type="number" inputmode="numeric" min="1" value="5">
 
             </div>
 
         </div>
 
-        <button
-            class="start-button"
-            onclick="startGame()">
+        <button class="start-button" id="startButton" type="button">
 
-            Start Auction
+            Start auction
 
         </button>
 
@@ -124,17 +115,7 @@
 
 </div>
 
-<script src="js/settings.js"></script>
-
-<script>
-
-window.onload = function () {
-
-    loadCategories();
-
-};
-
-</script>
+<script src="js/settings.js" defer></script>
 
 </body>
 </html>

@@ -1,40 +1,27 @@
 // =========================
-// AUCTION DEBATE GAME
+// AUCTION DRAFT DEBATE
 // GAME STATE
-// VERSION 1.0
+// VERSION 3.0  (2-4 players)
 // =========================
+
 
 export const game = {
 
     settings: {
 
-        player1: "",
-        player2: "",
+        // names is now a list, so 2, 3 or 4 players all work
+        names: [],
 
         category: "",
         sportsMode: null,
+        file: "",
 
         budget: 100,
-        rosterSize: 7
+        rosterSize: 5
 
     },
 
-    player1: {
-
-        name: "",
-        money: 0,
-        roster: []
-
-    },
-
-    player2: {
-
-        name: "",
-        money: 0,
-        roster: []
-
-    },
-
+    // players[0] is Player 1, players[1] is Player 2, etc.
     players: [],
 
     auction: {
@@ -45,38 +32,36 @@ export const game = {
 
         currentBid: 0,
 
+        // index of the player currently leading, or null
         highestBidder: null,
 
-        currentTurn: 1,
+        // index of the player whose turn it is
+        currentTurn: 0,
 
-        openingPlayer: 1,
+        // index of the player who opens the next item (rotates)
+        openingIndex: 0,
 
         round: 1,
+
+        // out[i] === true means player i is done bidding on THIS item
+        out: [],
 
         history: []
 
     },
 
-    // -------------------------
-    // NEITHER KNOWS
-    // -------------------------
-
     neitherKnows: {
 
-        votes: 0,
+        remaining: 0,
 
-        player1Voted: false,
-
-        player2Voted: false,
-
-        remaining: 0
+        // votes[i] === true means player i voted to skip this item
+        votes: []
 
     },
 
     status: {
 
         started: false,
-
         gameOver: false
 
     }
@@ -86,79 +71,51 @@ export const game = {
 
 
 // =========================
-// RESET GAME
+// RESET
 // =========================
 
 export function resetGame() {
 
-    game.player1.name = game.settings.player1;
-    game.player2.name = game.settings.player2;
+    game.players = game.settings.names.map((name, index) => ({
 
-    game.player1.money = game.settings.budget;
-    game.player2.money = game.settings.budget;
+        index: index,
+        name: name,
+        money: game.settings.budget,
+        roster: []
 
-    game.player1.roster = [];
-    game.player2.roster = [];
+    }));
 
     game.auction.deck = [];
-
     game.auction.currentItem = null;
-
     game.auction.currentBid = 0;
-
     game.auction.highestBidder = null;
-
-    game.auction.currentTurn = 1;
-
-    game.auction.openingPlayer = 1;
-
+    game.auction.currentTurn = 0;
+    game.auction.openingIndex = 0;
     game.auction.round = 1;
-
+    game.auction.out = game.players.map(() => false);
     game.auction.history = [];
 
-    game.players = [
-    game.player1,
-    game.player2
-];
-
-    // -------------------------
-    // SET SKIP LIMIT
-    // -------------------------
-
-    const size = game.settings.rosterSize;
-
-    if (size <= 3) {
-
-        game.neitherKnows.remaining = 0;
-
-    } else if (size <= 6) {
-
-        game.neitherKnows.remaining = 1;
-
-    } else if (size <= 10) {
-
-        game.neitherKnows.remaining = 2;
-
-    } else if (size <= 15) {
-
-        game.neitherKnows.remaining = 3;
-
-    } else if (size <= 25) {
-
-        game.neitherKnows.remaining = 4;
-
-    } else {
-
-        game.neitherKnows.remaining = 5;
-
-    }
-
-    game.neitherKnows.votes = 0;
-    game.neitherKnows.player1Voted = false;
-    game.neitherKnows.player2Voted = false;
+    game.neitherKnows.remaining = skipAllowance(game.settings.rosterSize);
+    game.neitherKnows.votes = game.players.map(() => false);
 
     game.status.started = false;
     game.status.gameOver = false;
+
+}
+
+
+
+// How many "neither knows" skips the table gets for the whole draft.
+
+function skipAllowance(rosterSize) {
+
+    if (rosterSize <= 3) return 0;
+    if (rosterSize <= 6) return 1;
+    if (rosterSize <= 10) return 2;
+    if (rosterSize <= 15) return 3;
+    if (rosterSize <= 25) return 4;
+
+    return 5;
 
 }
 
@@ -168,75 +125,87 @@ export function resetGame() {
 // PLAYER HELPERS
 // =========================
 
-export function getPlayer(number) {
+export function player(index) {
 
-    return number === 1
-        ? game.player1
-        : game.player2;
+    return game.players[index];
 
 }
 
 
+export function playerCount() {
 
-export function getOpponent(number) {
-
-    return number === 1
-        ? game.player2
-        : game.player1;
+    return game.players.length;
 
 }
 
 
+// True when this player still has roster spots to fill.
 
-// =========================
-// MONEY HELPERS
-// =========================
+export function stillDrafting(index) {
 
-export function spendMoney(playerNumber, amount) {
-
-    getPlayer(playerNumber).money -= amount;
+    return game.players[index].roster.length < game.settings.rosterSize;
 
 }
 
 
+export function rosterFull(index) {
 
-export function addRosterItem(playerNumber, item) {
-
-    getPlayer(playerNumber).roster.push(item);
-
-}
-
-
-
-// =========================
-// ROSTER HELPERS
-// =========================
-
-export function rosterFull(playerNumber) {
-
-    return getPlayer(playerNumber).roster.length >=
-        game.settings.rosterSize;
+    return !stillDrafting(index);
 
 }
-
-
-
-export function totalPicks() {
-
-    return (
-        game.player1.roster.length +
-        game.player2.roster.length
-    );
-
-}
-
 
 
 export function draftComplete() {
 
-    return (
-        rosterFull(1) &&
-        rosterFull(2)
-    );
+    return game.players.every((p, i) => rosterFull(i));
+
+}
+
+
+
+// =========================
+// MONEY + ROSTER
+// =========================
+
+export function spendMoney(index, amount) {
+
+    game.players[index].money -= amount;
+
+}
+
+
+export function addRosterItem(index, item) {
+
+    game.players[index].roster.push(item);
+
+}
+
+
+
+// =========================
+// TURN ORDER HELPERS
+// =========================
+
+// Walks forward through the seating order (wrapping around)
+// and returns the first index that passes the test.
+// Returns null if nobody passes the test.
+
+export function nextMatching(startIndex, test) {
+
+    const count = playerCount();
+
+    for (let step = 0; step < count; step++) {
+
+        const index = (startIndex + step) % count;
+
+        if (test(index)) {
+
+            return index;
+
+        }
+
+    }
+
+    return null;
 
 }

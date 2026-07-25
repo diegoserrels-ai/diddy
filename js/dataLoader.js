@@ -1,61 +1,14 @@
 // =========================
-// AUCTION DEBATE GAME
+// AUCTION DRAFT DEBATE
 // DATA LOADER
-// VERSION 1.0
+// VERSION 2.0
 // =========================
+//
+// The setup screen already worked out which JSON file to use
+// and saved it as settings.file, so this file just loads it.
+// Adding a new category only means editing js/settings.js.
 
 import { game } from "./gameState.js";
-
-
-
-// =========================
-// REMOVE DUPLICATES
-// =========================
-
-function removeDuplicates(array) {
-
-    const seen = new Set();
-
-    return array.filter(item => {
-
-        const name =
-            typeof item === "string"
-                ? item
-                : item.name;
-
-        if (seen.has(name)) {
-            return false;
-        }
-
-        seen.add(name);
-        return true;
-
-    });
-
-}
-
-
-
-// =========================
-// SHUFFLE
-// =========================
-
-function shuffle(array) {
-
-    const shuffled = [...array];
-
-    for (let i = shuffled.length - 1; i > 0; i--) {
-
-        const j = Math.floor(Math.random() * (i + 1));
-
-        [shuffled[i], shuffled[j]] =
-        [shuffled[j], shuffled[i]];
-
-    }
-
-    return shuffled;
-
-}
 
 
 
@@ -65,182 +18,102 @@ function shuffle(array) {
 
 async function loadJSON(file) {
 
-    try {
+    const response = await fetch(`data/${file}`);
 
-        const response =
-        await fetch(`data/${file}`);
+    if (!response.ok) {
 
-        if (!response.ok) {
-
-            throw new Error(
-                `Unable to load ${file}`
-            );
-
-        }
-
-        return await response.json();
+        throw new Error(`Could not load data/${file}`);
 
     }
 
-    catch (error) {
-
-        console.error(error);
-
-        return [];
-
-    }
+    return await response.json();
 
 }
 
 
 
 // =========================
-// CATEGORY FILE
+// CLEAN UP THE LIST
 // =========================
 
-function getFileName() {
+// Accepts either ["Hello - Adele", ...]
+// or [{ name: "Hello - Adele" }, ...]
 
-    const s = game.settings;
-
-    switch (s.category) {
-
-        case "Athletes":
-
-            return s.sportsMode === "current"
-                ? "athletesCurrent.json"
-                : "athletesAllTime.json";
-
-        case "MLB Players":
-
-            return s.sportsMode === "current"
-                ? "mlbCurrent.json"
-                : "mlbAllTime.json";
-
-        case "NFL Players":
-
-            return s.sportsMode === "current"
-                ? "nflCurrent.json"
-                : "nflAllTime.json";
-
-        case "Songs":
-            return "songs.json";
-
-        case "Ye Songs":
-            return "yeSongs.json";
-
-        case "Movies":
-            return "movies.json";
-
-        case "Music Artists":
-            return "musicArtists.json";
-
-        case "Fast Food Chains":
-            return "fastFood.json";
-
-        case "Food Items":
-            return "foodItems.json";
-
-        case "Alcohol":
-            return "alcohol.json";
-
-                case "Actors":
-            return "actors.json";
-
-        case "Candy":
-            return "Candy.json";
-
-        case "Characters":
-            return "characters.json";
-
-        case "Chips":
-            return "chips.json";
-
-        case "Clothing Brands":
-            return "clothingbrands.json";
-
-        case "Ice Cream":
-            return "icecream.json";
-
-        case "Memes":
-            return "memes.json";
-
-        case "Soft Drinks":
-            return "SoftDrinks.json";    
-
-        case "Vacation Spots":
-            return "vacationSpots.json";
-
-        default:
-
-            throw new Error(
-                `Unknown category: ${s.category}`
-            );
-
-    }
-
-}
-
-
-
-// =========================
-// NORMALIZE DATA
-// =========================
-
-function normalizeItems(data) {
+function normalize(data) {
 
     return data.map((item, index) => {
 
         if (typeof item === "string") {
 
-            return {
-
-                id: index + 1,
-
-                name: item
-
-            };
+            return { id: index + 1, name: item };
 
         }
 
-        return {
-
-            id: item.id ?? index + 1,
-
-            ...item
-
-        };
+        return { id: item.id ?? index + 1, ...item };
 
     });
 
 }
 
 
+function removeDuplicates(items) {
+
+    const seen = new Set();
+
+    return items.filter(item => {
+
+        const key = String(item.name).trim().toLowerCase();
+
+        if (seen.has(key)) return false;
+
+        seen.add(key);
+
+        return true;
+
+    });
+
+}
+
+
+function shuffle(items) {
+
+    const copy = [...items];
+
+    for (let i = copy.length - 1; i > 0; i--) {
+
+        const j = Math.floor(Math.random() * (i + 1));
+
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+
+    }
+
+    return copy;
+
+}
+
+
 
 // =========================
-// LOAD AUCTION DECK
+// BUILD THE DECK
 // =========================
 
 export async function loadAuctionDeck() {
 
-    const file = getFileName();
+    const file = game.settings.file;
 
-    let data =
-    await loadJSON(file);
+    if (!file) {
 
-    data =
-    normalizeItems(data);
+        throw new Error("No category file was saved on the setup screen.");
 
-    data =
-    removeDuplicates(data);
+    }
 
-    data =
-    shuffle(data);
+    const raw = await loadJSON(file);
 
-    game.auction.deck = data;
+    game.auction.deck = shuffle(removeDuplicates(normalize(raw)));
 
-    console.log(
-        `Loaded ${game.auction.deck.length} auction items`
-    );
+    console.log(`Loaded ${game.auction.deck.length} items from ${file}`);
+
+    return game.auction.deck.length;
 
 }
 

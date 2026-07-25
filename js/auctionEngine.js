@@ -1,18 +1,32 @@
 // =========================
-// AUCTION DEBATE GAME
+// AUCTION DRAFT DEBATE
 // AUCTION ENGINE
-// VERSION 2.0
-// PART 1 OF 3
+// VERSION 3.0  (2-4 players)
 // =========================
+//
+// HOW A ROUND WORKS
+//
+// 1. An item is drawn. Everyone who still has roster spots
+//    and at least $1 is in the bidding.
+// 2. The opening player has to open at $1 or more.
+// 3. After that, each player in turn either raises or passes.
+//    Passing takes you out of THIS item only.
+// 4. When only the leader is left, the item is theirs.
+// 5. If a player runs out of money or fills their roster,
+//    they are skipped automatically. Leftover items go out free
+//    so every roster still fills up.
+
 
 import {
     game,
     resetGame,
-    getPlayer,
+    playerCount,
+    stillDrafting,
+    rosterFull,
+    draftComplete,
     spendMoney,
     addRosterItem,
-    rosterFull,
-    draftComplete
+    nextMatching
 } from "./gameState.js";
 
 import {
@@ -21,17 +35,16 @@ import {
 } from "./dataLoader.js";
 
 import {
-    refreshUI,
-    updateCurrentItem,
-    updateBid,
-    updateLeader,
-    updateTurn,
-    updateMoney,
-    updateRosters,
-    updateMessage,
-    updateNeitherKnows,
-    showAuctionNotification,
-    hideAuctionNotification
+    render,
+    setMessage,
+    primeBidInput,
+    setControlsEnabled,
+    lockControls,
+    showNotification,
+    hideNotification,
+    updateSkipBar,
+    openAllRosters,
+    setSkipVoteHandler
 } from "./ui.js";
 
 import {
@@ -39,67 +52,121 @@ import {
     playSoldSound
 } from "./sound.js";
 
+
+const BID_POPUP = 900;
+const SOLD_POPUP = 1250;
+const FREE_POPUP = 700;
+
+
+function el(id) {
+    return document.getElementById(id);
+}
+
+function nameOf(index) {
+    return game.players[index].name;
+}
+
+// Everyone still bidding on the current item.
+function contenders() {
+
+    return game.players
+        .map((p, i) => i)
+        .filter(i => !game.auction.out[i]);
+
+}
+
+
+
 // =========================
-// INITIALIZE GAME
+// STARTUP
 // =========================
 
-window.addEventListener("DOMContentLoaded", initializeGame);
+window.addEventListener("DOMContentLoaded", start);
 
-async function initializeGame() {
 
-    console.log("1 - initializeGame started");
+async function start() {
 
-    const settings = JSON.parse(localStorage.getItem("auctionSettings"));
-    console.log("2 - Settings:", settings);
+    const saved = localStorage.getItem("auctionSettings");
 
-    if (!settings) {
-        updateMessage("No game settings found.");
+    if (!saved) {
+
+        setMessage("No game settings found. Head back and start a new game.");
+
         return;
+
     }
 
-    game.settings = { ...settings };
-    console.log("3 - Game settings assigned");
+    const settings = JSON.parse(saved);
+
+    // Older saved games stored player1 / player2 instead of a list.
+    if (!settings.names) {
+
+        settings.names =
+            [settings.player1, settings.player2].filter(Boolean);
+
+    }
+
+    game.settings = { ...game.settings, ...settings };
 
     resetGame();
-    console.log("4 - Game reset");
 
-    await loadAuctionDeck();
-    console.log("5 - Deck loaded:", game.auction.deck.length);
+    try {
+
+        await loadAuctionDeck();
+
+    } catch (error) {
+
+        console.error(error);
+
+        setMessage("Could not load the items for this category. Check the data folder.");
+
+        return;
+
+    }
+
+    // Not enough items for everyone? Shrink the rosters instead of
+    // running dry halfway through.
+    const needed = playerCount() * game.settings.rosterSize;
+
+    if (game.auction.deck.length < needed) {
+
+        game.settings.rosterSize = Math.max(
+            1,
+            Math.floor(game.auction.deck.length / playerCount())
+        );
+
+        console.warn(
+            `Category only has ${game.auction.deck.length} items. Roster size set to ${game.settings.rosterSize}.`
+        );
+
+    }
 
     game.status.started = true;
-    console.log("6 - Status updated");
 
-    refreshUI();
-    console.log("7 - UI refreshed");
-        
-    document
-        .getElementById("player1SkipButton")
-        .addEventListener("click", () => toggleNeitherKnows(1));
+    wireControls();
 
-    document
-        .getElementById("player2SkipButton")
-        .addEventListener("click", () => toggleNeitherKnows(2));
+    setSkipVoteHandler(toggleSkipVote);
 
-    updateNeitherKnows();
+    render();
 
     startRound();
-    console.log("8 - Round started");
 
-    const bidInput = document.getElementById("bidAmount");
+}
 
-    bidInput.addEventListener("keydown", function (event) {
 
-        if (game.status.gameOver) return;
+function wireControls() {
 
-        if (event.key === "Enter") {
+    el("bidButton").addEventListener("click", placeBid);
 
-            event.preventDefault();
+    el("passButton").addEventListener("click", passBid);
 
-            if (!document.getElementById("bidButton").disabled) {
-                placeBid();
-            }
+    el("bidAmount").addEventListener("keydown", event => {
 
-        }
+        if (event.key !== "Enter") return;
+
+        event.preventDefault();
+
+        if (!el("bidButton").disabled) placeBid();
 
     });
 
@@ -108,752 +175,471 @@ async function initializeGame() {
 
 
 // =========================
-// START ROUND
+// START A ROUND
 // =========================
 
 function startRound() {
 
     if (draftComplete()) {
 
-        finishDraft();
-
-        return;
+        return finishDraft();
 
     }
 
-    const nextItem =
-        drawNextItem();
+    const item = drawNextItem();
 
-    if (!nextItem) {
+    if (!item) {
 
-        finishDraft();
-
-        return;
+        return finishDraft("That category ran out of items.");
 
     }
 
-    game.auction.currentItem =
-        nextItem;
+    const a = game.auction;
 
-    game.auction.currentBid = 0;
+    a.currentItem = item;
+    a.currentBid = 0;
+    a.highestBidder = null;
 
-    game.auction.highestBidder = null;
-
-    game.auction.currentTurn =
-        game.auction.openingPlayer;
-    game.neitherKnows.votes = 0;
-    game.neitherKnows.player1Voted = false;
-    game.neitherKnows.player2Voted = false;
-
-    updateNeitherKnows();
-
-    updateCurrentItem();
-
-    updateBid();
-
-    updateLeader();
-
-    updateTurn();
-
-    updateMessage(
-        `${getPlayer(
-            game.auction.currentTurn
-        ).name} must open bidding.`
+    // Full rosters and empty wallets sit this one out.
+    a.out = game.players.map(
+        (p, i) => rosterFull(i) || p.money < 1
     );
 
-    document.getElementById("bidAmount").value = "";
-const bidBox =
-    document.getElementById("bidAmount");
+    game.neitherKnows.votes = game.players.map(() => false);
 
-bidBox.focus();
-bidBox.select();
+    const bidders = contenders();
 
-    checkZeroDollarOpening();
+    // Nobody has a dollar left, so there is nothing to auction.
+    // Deal out the rest of the spots in one go rather than making
+    // everyone sit through a popup per pick.
+    if (bidders.length === 0) {
 
-updateActionButtons();
-
-refreshUI();
-}
-
-
-
-// =========================
-// ZERO-DOLLAR OPENING RULE
-// =========================
-
-function checkZeroDollarOpening() {
-
-    const openingPlayer =
-        getPlayer(game.auction.currentTurn);
-
-    const otherPlayer =
-        getPlayer(
-            game.auction.currentTurn === 1 ? 2 : 1
-        );
-
-    // Normal auction if both players have money.
-    if (
-        openingPlayer.money > 0 &&
-        otherPlayer.money > 0
-    ) {
-        return;
-    }
-
-    // If BOTH players are broke, the automatic
-    // zero-dollar draft will handle everything.
-    if (
-        openingPlayer.money === 0 &&
-        otherPlayer.money === 0
-    ) {
-        return;
-    }
-
-    // If the opening player is broke,
-    // switch to the player with money.
-    if (openingPlayer.money === 0) {
-
-        game.auction.currentTurn =
-            game.auction.currentTurn === 1 ? 2 : 1;
-
-        updateTurn();
+        return giveAwayRemaining();
 
     }
 
-    updateMessage(
-        `${getPlayer(game.auction.currentTurn).name} may bid $1 or pass.`
-    );
+    a.currentTurn = nextMatching(a.openingIndex, i => !a.out[i]);
 
-    document.getElementById("passButton").disabled = false;
+    render();
 
-}
-
-
-
-// =========================
-// BID BUTTON
-// =========================
-
-window.placeBid = function () {
-
-    const amount =
-        Number(
-            document.getElementById("bidAmount").value
-        );
-
-    const bidder =
-        getPlayer(
-            game.auction.currentTurn
-        );
-
-     if (!canPlayerRaise(game.auction.currentTurn)) {
-
-    return;
-
-}
-
-    if (!Number.isInteger(amount)) {
-
-        alert("Whole dollar bids only.");
-
-        return;
-
-    }
-
-    if (
-        game.auction.currentBid === 0 &&
-        amount < 1
-    ) {
-
-        alert(
-            "Opening bid must be at least $1."
-        );
-
-        return;
-
-    }
-
-    if (
-        amount <=
-        game.auction.currentBid
-    ) {
-
-        alert(
-            "Bid must be higher than the current bid."
-        );
-
-        return;
-
-    }
-
-    if (
-        amount >
-        bidder.money
-    ) {
-
-        alert(
-            "You don't have enough money."
-        );
-
-        return;
-
-    }
-
-    game.auction.currentBid =
-    amount;
-
-game.auction.highestBidder =
-    game.auction.currentTurn;
-
-const bidderName =
-    bidder.name;
-
-const itemName =
-    game.auction.currentItem.name;
-
-showAuctionNotification(
-    "💰 BID PLACED",
-    `${bidderName} bids`,
-    `$${amount}`,
-    itemName
-);
-
-playBidSound();
-
-setTimeout(() => {
-
-    hideAuctionNotification();
-
-    updateBid();
-
-    updateLeader();
-
-    switchTurn();
+    primeBidInput();
 
     updateActionButtons();
 
-}, 1000);
+    focusBidInput();
 
-};
+    setMessage(
 
+        bidders.length === 1
+            ? `${nameOf(a.currentTurn)} is the only one who can bid. Open at $1 or pass it along.`
+            : `${nameOf(a.currentTurn)} opens the bidding.`
 
-
-// =========================
-// SWITCH TURN
-// =========================
-
-function canPlayerRaise(playerNumber) {
-
-    const player =
-        getPlayer(playerNumber);
-
-    // Nobody has bid yet.
-    // Any player with at least $1 can open.
-
-    if (game.auction.currentBid === 0) {
-        return player.money >= 1;
-    }
-
-    // To raise, the player must be able to bid
-    // at least $1 more than the current bid.
-
-    return player.money >
-        game.auction.currentBid;
+    );
 
 }
+
+
+
+// =========================
+// BUTTON STATE
+// =========================
 
 function updateActionButtons() {
 
-    const bidButton =
-        document.getElementById("bidButton");
-
-    const passButton =
-        document.getElementById("passButton");
-
-    const bidInput =
-        document.getElementById("bidAmount");
-
     if (game.status.gameOver) {
 
-        bidButton.disabled = true;
-        passButton.disabled = true;
-        bidInput.disabled = true;
+        lockControls();
 
         return;
 
     }
 
-bidButton.disabled =
-    !canPlayerRaise(
-        game.auction.currentTurn
-    );
+    const a = game.auction;
 
-bidInput.disabled =
-    bidButton.disabled;
+    const me = game.players[a.currentTurn];
 
-    // Pass is only legal after a bid has been
-    // placed OR during the special "$0 opponent"
-    // opening rule.
+    // You need to be able to beat the current bid.
+    const canBid = !a.out[a.currentTurn] && me.money > a.currentBid;
 
-    const currentPlayer =
-        getPlayer(game.auction.currentTurn);
+    // Passing is only allowed once there is a bid to pass on,
+    // or when you are the only person who can bid at all.
+    const canPass = a.currentBid > 0 || contenders().length === 1;
 
-    const otherPlayer =
-        getPlayer(
-            game.auction.currentTurn === 1 ? 2 : 1
-        );
-
-    passButton.disabled = !(
-        game.auction.currentBid > 0 ||
-        (
-            game.auction.currentBid === 0 &&
-            currentPlayer.money > 0 &&
-            otherPlayer.money === 0
-        )
-    );
+    setControlsEnabled(canBid, canPass);
 
 }
-function switchTurn() {
 
-    game.auction.currentTurn =
-        game.auction.currentTurn === 1
-            ? 2
-            : 1;
 
-    updateTurn();
+// Auto focusing on a phone throws the keyboard over the screen,
+// so only do it where there is room.
 
-    updateActionButtons();
+function focusBidInput() {
 
-    updateMessage(
+    if (!window.matchMedia("(min-width: 900px)").matches) return;
 
-        `${getPlayer(
-            game.auction.currentTurn
-        ).name}'s turn.`
+    const input = el("bidAmount");
 
-    );
-
-    refreshUI();
-
-    autoWinIfOpponentBroke();
+    input.focus();
+    input.select();
 
 }
 
 
 
 // =========================
-// AUTO WIN
+// PLACE BID
 // =========================
 
-function autoWinIfOpponentBroke() {
+function placeBid() {
 
-    const currentPlayer =
-        getPlayer(game.auction.currentTurn);
+    if (game.status.gameOver) return;
 
-    // If nobody has bid yet,
-    // don't auto-award anything.
-    if (game.auction.currentBid === 0) {
-        return;
-    }
+    const a = game.auction;
 
-    // If the current player cannot legally
-    // make another bid, the auction is over.
+    const bidder = game.players[a.currentTurn];
 
-    if (!canPlayerRaise(game.auction.currentTurn)) {
+    const raw = el("bidAmount").value;
 
-    awardItem(
-        game.auction.highestBidder,
-        game.auction.currentBid
-    );
+    const amount = Number(raw);
 
-}
+    if (raw === "" || !Number.isInteger(amount)) {
 
-}
-// =========================
-// PASS BUTTON
-// =========================
-
-window.passBid = function () {
-
-    if (game.status.gameOver) {
-        return;
-    }
-
-    // No bids have been placed yet.
-    // This only occurs when one player has $0
-    // and the player with money chooses to pass.
-
-    if (game.auction.currentBid === 0) {
-
-        const currentPlayer =
-            game.auction.currentTurn;
-
-        const otherPlayer =
-            currentPlayer === 1 ? 2 : 1;
-
-        awardItem(otherPlayer, 0);
-
+        alert("Whole dollar amounts only.");
         return;
 
     }
 
-    // Normal auction:
-    // Highest bidder wins.
+    if (amount < 1) {
 
-    awardItem(
-        game.auction.highestBidder,
-        game.auction.currentBid
-    );
+        alert("Bids start at $1.");
+        return;
 
-};
+    }
 
+    if (amount <= a.currentBid) {
 
+        alert(`That has to beat $${a.currentBid}.`);
+        return;
 
-// =========================
-// AWARD ITEM
-// =========================
+    }
 
-function awardItem(playerNumber, price) {
+    if (amount > bidder.money) {
 
-    const player =
-        getPlayer(playerNumber);
+        alert(`${bidder.name} only has $${bidder.money}.`);
+        return;
 
-    spendMoney(
-        playerNumber,
-        price
-    );
+    }
 
-    addRosterItem(
-        playerNumber,
-        {
-            id: game.auction.currentItem.id,
-            name: game.auction.currentItem.name,
-            price: price
+    a.currentBid = amount;
+    a.highestBidder = a.currentTurn;
+
+    // Anyone who cannot go higher is out of this item.
+    game.players.forEach((p, i) => {
+
+        if (i !== a.highestBidder && p.money <= amount) {
+
+            a.out[i] = true;
+
         }
-    );
-
-    game.auction.history.push({
-
-        round:
-            game.auction.round,
-
-        item:
-            game.auction.currentItem.name,
-
-        winner:
-            player.name,
-
-        price:
-            price
 
     });
 
-    game.auction.round++;
+    render();
 
-    updateMoney();
+    showNotification(
+        "BID",
+        `${bidder.name} bids`,
+        `$${amount}`,
+        a.currentItem.name
+    );
 
-    updateRosters();
+    playBidSound();
 
-    game.auction.openingPlayer =
-    game.auction.openingPlayer === 1
-        ? 2
-        : 1;
+    setTimeout(() => {
 
-showAuctionNotification(
-    "🏆 SOLD!",
-    `${player.name} wins`,
-    `$${price}`,
-    game.auction.currentItem.name
-);
+        hideNotification();
 
-playSoldSound();
+        afterBid();
 
-setTimeout(() => {
+    }, BID_POPUP);
 
-    hideAuctionNotification();
+}
 
-    continueDraft();
 
-}, 1250);
+function afterBid() {
+
+    const a = game.auction;
+
+    const challengers = contenders().filter(i => i !== a.highestBidder);
+
+    if (challengers.length === 0) {
+
+        return awardItem(a.highestBidder, a.currentBid);
+
+    }
+
+    a.currentTurn = nextMatching(
+        (a.currentTurn + 1) % playerCount(),
+        i => challengers.includes(i)
+    );
+
+    render();
+
+    primeBidInput();
+
+    updateActionButtons();
+
+    focusBidInput();
+
+    setMessage(`${nameOf(a.currentTurn)}: raise it or pass.`);
 
 }
 
 
 
 // =========================
-// CONTINUE DRAFT
+// PASS
 // =========================
+
+function passBid() {
+
+    if (game.status.gameOver) return;
+
+    const a = game.auction;
+
+    const passer = a.currentTurn;
+
+    a.out[passer] = true;
+
+    // No bid on the table means this is the lone bidder turning
+    // the item down, so it goes free to the next player who needs one.
+    if (a.currentBid === 0) {
+
+        const receiver = nextMatching(
+            (passer + 1) % playerCount(),
+            i => stillDrafting(i) && i !== passer
+        );
+
+        return awardItem(receiver === null ? passer : receiver, 0, true);
+
+    }
+
+    const challengers = contenders().filter(i => i !== a.highestBidder);
+
+    if (challengers.length === 0) {
+
+        return awardItem(a.highestBidder, a.currentBid);
+
+    }
+
+    a.currentTurn = nextMatching(
+        (passer + 1) % playerCount(),
+        i => challengers.includes(i)
+    );
+
+    render();
+
+    primeBidInput();
+
+    updateActionButtons();
+
+    focusBidInput();
+
+    setMessage(`${nameOf(passer)} passed. ${nameOf(a.currentTurn)} is up.`);
+
+}
+
+
+
+// =========================
+// AWARD THE ITEM
+// =========================
+
+function recordPick(index, item, price) {
+
+    const a = game.auction;
+
+    spendMoney(index, price);
+
+    addRosterItem(index, {
+
+        id: item.id,
+        name: item.name,
+        price: price
+
+    });
+
+    a.history.push({
+
+        round: a.round,
+        item: item.name,
+        winner: game.players[index].name,
+        price: price
+
+    });
+
+    a.round++;
+
+    // The opening seat rotates so the same person is not
+    // always forced to bid first.
+    a.openingIndex = (a.openingIndex + 1) % playerCount();
+
+}
+
+
+function awardItem(index, price, free = false) {
+
+    const a = game.auction;
+
+    const winner = game.players[index];
+
+    recordPick(index, a.currentItem, price);
+
+    render();
+
+    showNotification(
+
+        free ? "FREE PICK" : "SOLD",
+        free ? `${winner.name} picks up` : `${winner.name} wins`,
+        `$${price}`,
+        a.currentItem.name
+
+    );
+
+    if (!free) playSoldSound();
+
+    setTimeout(() => {
+
+        hideNotification();
+
+        continueDraft();
+
+    }, free ? FREE_POPUP : SOLD_POPUP);
+
+}
+
+
+// Everyone is broke but rosters are not full. Deal the rest of the
+// items out one seat at a time and end the draft.
+
+function giveAwayRemaining() {
+
+    const a = game.auction;
+
+    let item = a.currentItem;
+
+    let seat = a.openingIndex;
+
+    let given = 0;
+
+    while (item && !draftComplete()) {
+
+        const receiver = nextMatching(seat, i => stillDrafting(i));
+
+        if (receiver === null) break;
+
+        recordPick(receiver, item, 0);
+
+        given++;
+
+        seat = (receiver + 1) % playerCount();
+
+        if (draftComplete()) break;
+
+        item = drawNextItem();
+
+    }
+
+    finishDraft(
+
+        given === 0
+            ? undefined
+            : `Everyone ran out of money, so the last ${given} ${given === 1 ? "pick was" : "picks were"} dealt out free.`
+
+    );
+
+}
+
 
 function continueDraft() {
 
     if (draftComplete()) {
 
-        finishDraft();
-
-        return;
+        return finishDraft();
 
     }
 
-    autoFillRoster();
-
-    if (draftComplete()) {
-
-        finishDraft();
-
-        return;
-
-    }
-
-    if (
-        game.player1.money === 0 &&
-        game.player2.money === 0
-    ) {
-
-        finishZeroDollarDraft();
-
-        finishDraft();
-
-        return;
-
-    }
-
-    setTimeout(
-        startRound,
-        500
-    );
+    setTimeout(startRound, 250);
 
 }
 
 
 
 // =========================
-// AUTO FILL
-// If one roster fills first,
-// remaining player gets random items.
+// NEITHER KNOWS
 // =========================
 
-function autoFillRoster() {
-
-    if (
-        rosterFull(1) &&
-        rosterFull(2)
-    ) {
-
-        return;
-
-    }
-
-    if (
-        rosterFull(1)
-    ) {
-
-        while (
-            !rosterFull(2)
-        ) {
-
-            const item =
-                drawNextItem();
-
-            if (!item) {
-
-                break;
-
-            }
-
-            addRosterItem(
-                2,
-                {
-                    id: item.id,
-                    name: item.name,
-                    price: 0
-                }
-            );
-
-        }
-
-        updateRosters();
-
-        return;
-
-    }
-
-    if (
-        rosterFull(2)
-    ) {
-
-        while (
-            !rosterFull(1)
-        ) {
-
-            const item =
-                drawNextItem();
-
-            if (!item) {
-
-                break;
-
-            }
-
-            addRosterItem(
-                1,
-                {
-                    id: item.id,
-                    name: item.name,
-                    price: 0
-                }
-            );
-
-        }
-
-        updateRosters();
-
-    }
-
-}
-
-
-
-// =========================
-// BOTH PLAYERS OUT OF MONEY
-// Alternate random picks.
-// =========================
-
-function finishZeroDollarDraft() {
-
-    let turn =
-        game.auction.openingPlayer;
-
-    while (!draftComplete()) {
-
-        if (
-            !rosterFull(turn)
-        ) {
-
-            const item =
-                drawNextItem();
-
-            if (!item) {
-
-                break;
-
-            }
-
-            addRosterItem(
-                turn,
-                {
-                    id: item.id,
-                    name: item.name,
-                    price: 0
-                }
-            );
-
-        }
-
-        turn =
-            turn === 1
-                ? 2
-                : 1;
-
-    }
-
-    updateRosters();
-
-}// =========================
-// FINISH DRAFT
-// =========================
-
-function finishDraft() {
-
-    game.status.gameOver = true;
-
-    updateActionButtons();
-
-    refreshUI();
-
-    updateMessage(
-        "Draft complete! Compare your rosters and debate the winner."
-    );
-
-    document.getElementById("passButton").disabled = true;
-
-    const bidBox =
-        document.getElementById("bidAmount");
-
-    if (bidBox) {
-
-        bidBox.disabled = true;
-
-    }
-
-}
-
-
-
-// =========================
-// OPTIONAL HISTORY HELPERS
-// =========================
-
-function toggleNeitherKnows(player) {
+function toggleSkipVote(index) {
 
     if (game.status.gameOver) return;
 
-    if (game.neitherKnows.remaining <= 0) return;
+    const nk = game.neitherKnows;
 
-    if (player === 1) {
+    if (nk.remaining <= 0) return;
 
-        game.neitherKnows.player1Voted =
-            !game.neitherKnows.player1Voted;
+    nk.votes[index] = !nk.votes[index];
 
-    } else {
+    updateSkipBar();
 
-        game.neitherKnows.player2Voted =
-            !game.neitherKnows.player2Voted;
+    const voters = game.players.filter(p => stillDrafting(p.index));
 
-    }
+    const everyone =
+        voters.length > 0 &&
+        voters.every(p => nk.votes[p.index]);
 
-    game.neitherKnows.votes = 0;
+    if (!everyone) return;
 
-if (game.neitherKnows.player1Voted) {
-    game.neitherKnows.votes++;
-}
+    nk.remaining--;
 
-if (game.neitherKnows.player2Voted) {
-    game.neitherKnows.votes++;
-}
+    nk.votes = game.players.map(() => false);
 
-    updateNeitherKnows();
+    lockControls();
 
-    if (game.neitherKnows.votes === 2) {
+    setMessage("Skipped. Nobody knew that one.");
 
-        game.neitherKnows.remaining--;
-
-        game.neitherKnows.votes = 0;
-        game.neitherKnows.player1Voted = false;
-        game.neitherKnows.player2Voted = false;
-
-        updateNeitherKnows();
-        updateMessage("Item skipped by mutual agreement.");
-
-        setTimeout(() => {
-
-            startRound();
-
-        }, 250);
-
-    }
+    setTimeout(startRound, 400);
 
 }
+
+
 
 // =========================
-// DEBUG HELPERS
+// END OF DRAFT
+// =========================
+
+function finishDraft(reason) {
+
+    game.status.gameOver = true;
+
+    hideNotification();
+
+    lockControls();
+
+    render();
+
+    openAllRosters();
+
+    setMessage(
+        reason ||
+        "Draft complete. Compare the rosters and argue it out."
+    );
+
+}
+
+
+
+// =========================
+// DEBUG
 // =========================
 
 window.game = game;
-
-window.nextRound = startRound;
-
-window.refreshUI = refreshUI;
-
-
-
-// =========================
-// END OF FILE
-// =========================
