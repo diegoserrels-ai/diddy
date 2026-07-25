@@ -396,7 +396,15 @@ if (
 
 }
 
-    const expanded = expandedMobilePlayers.has(index);
+if (
+    !expandedMobilePlayers.size &&
+    !game.status.gameOver &&
+    game.auction.currentTurn > 0
+) {
+    expandedMobilePlayers.add(game.auction.currentTurn - 1);
+}
+
+const expanded = expandedMobilePlayers.has(index);
 
     card.innerHTML = `
 
@@ -418,17 +426,12 @@ if (
 
 </div>
 
-            <div class="mobile-player-category">
 
-    ${game.settings.category}
-    ${
-        game.settings.category === "Sports"
-            ? ` (${game.settings.sportsMode})`
-            : ""
-    }
-
-</div>
-
+${
+    game.auction.highestBidder === index + 1 ||
+    player.money <= 0 ||
+    player.roster.length >= game.settings.rosterSize
+        ? `
 <div class="mobile-player-status">
 
     ${
@@ -450,30 +453,25 @@ if (
     }
 
 </div>
-
-            <div class="mobile-player-divider"></div>
+`
+        : ""
+}
 
 <div class="mobile-player-bottom">
 
     <div class="mobile-roster-label">
 
-        <span>Roster</span>
+        <strong>Players</strong>
 
-        <strong>
-
+        <span>
             ${player.roster.length}/${game.settings.rosterSize}
-
-        </strong>
-
-    </div>
-
-    <div class="mobile-expand-icon">
-
-        <span class="mobile-expand-icon ${expanded ? "expanded" : ""}">
-    ▼
-</span>
+        </span>
 
     </div>
+
+    <span class="mobile-expand-icon">
+        ${expanded ? "▲" : "▼"}
+    </span>
 
 </div>
 
@@ -523,21 +521,22 @@ if (
     `;
 
     card.querySelector(".mobile-player-header")
-        .addEventListener("click", () => {
+    .addEventListener("click", () => {
 
-            if (expanded) {
+        if (expanded) {
 
-                expandedMobilePlayers.delete(index);
+            expandedMobilePlayers.clear();
 
-            } else {
+        } else {
 
-                expandedMobilePlayers.add(index);
+            expandedMobilePlayers.clear();
+            expandedMobilePlayers.add(index);
 
-            }
+        }
 
-            updateMobileUI();
+        updateMobileUI();
 
-        });
+    });
 
     const skipButton = card.querySelector(".mobile-skip-button");
 

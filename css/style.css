@@ -554,7 +554,27 @@ transform: translateY(8px);
 
     justify-content: space-between;
 
-    padding: 6px 0;
+    align-items: center;
+
+    padding: 10px 12px;
+
+    margin-bottom: 6px;
+
+    border-radius: 10px;
+
+    background: rgba(255,255,255,.05);
+
+    border-left: 3px solid var(--gold);
+
+}
+
+.mobile-roster-item span {
+
+    font-weight: 700;
+
+    color: var(--gold);
+
+    font-variant-numeric: tabular-nums;
 
 }
 
@@ -616,14 +636,14 @@ transform: translateY(8px);
 
     border: 1px solid #343b46;
 
-    border-radius: 18px;
+    border-radius: 14px;
 
     overflow: hidden;
 
-    margin-bottom: 16px;
+    margin-bottom: 8px;
 
     box-shadow:
-        0 6px 18px rgba(0,0,0,.30);
+        0 4px 12px rgba(0,0,0,.28);
 
     transition:
         transform .18s ease,
@@ -666,27 +686,27 @@ transform: translateY(8px);
 
     align-items:center;
 
-    margin-bottom:10px;
+    margin-bottom:4px;
 
 }
 
 .mobile-player-money{
 
-    display: inline-flex;
+    display:inline-flex;
 
-    align-items: center;
+    align-items:center;
 
-    justify-content: center;
+    justify-content:center;
 
-    padding: 6px 12px;
+    padding:4px 10px;
 
-    border-radius: 999px;
+    border-radius:999px;
 
-    background: rgba(255,255,255,.08);
+    background:rgba(255,255,255,.08);
 
-    font-weight: 700;
+    font-weight:700;
 
-    font-size: 1rem;
+    font-size:.9rem;
 
     transition:
         background .2s ease,
@@ -707,23 +727,25 @@ transform: translateY(8px);
 
 .mobile-player-bottom {
 
-    display: flex;
+    display:flex;
 
-    justify-content: space-between;
+    justify-content:space-between;
 
-    align-items: center;
+    align-items:center;
+
+    margin-top:2px;
 
 }
 
 .mobile-roster-label {
 
-    display: flex;
+    display:flex;
 
-    gap: 10px;
+    gap:6px;
 
-    align-items: center;
+    align-items:center;
 
-    font-size: .95rem;
+    font-size:.82rem;
 
 }
 
@@ -785,7 +807,11 @@ transform: translateY(8px);
 
     display: none;
 
-    margin-top: 14px;
+    margin-top: 10px;
+
+    padding-top: 10px;
+
+    border-top: 1px solid rgba(255,255,255,.08);
 
 }
 
@@ -796,53 +822,32 @@ transform: translateY(8px);
 }
 
 .mobile-auction-title {
-
-    font-size: 1.2rem;
-
-    font-weight: bold;
-
-    margin-bottom: 12px;
-
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 6px;
 }
 
 .mobile-auction-player {
-
-    font-size: 1.8rem;
-
+    font-size: 1.45rem;
     font-weight: 800;
-
     text-align: center;
-
-    margin: 18px 0 6px;
-
-    letter-spacing: -.5px;
-
+    margin: 8px 0 2px;
+    letter-spacing: -.3px;
 }
 
 .mobile-current-bid-label {
-
     text-align: center;
-
     opacity: .65;
-
-    font-size: .85rem;
-
-    margin-top: 8px;
-
+    font-size: .75rem;
+    margin-top: 2px;
 }
 
 .mobile-current-bid {
-
     text-align: center;
-
-    font-size: 2.8rem;
-
+    font-size: 2.1rem;
     font-weight: 900;
-
     color: var(--gold);
-
-    margin-bottom: 16px;
-
+    margin-bottom: 10px;
 }
 
 .mobile-auction-row {
@@ -874,13 +879,9 @@ transform: translateY(8px);
 }
 
 .mobile-auction-status-row {
-
     display: flex;
-
-    gap: 10px;
-
-    margin: 18px 0;
-
+    gap: 8px;
+    margin: 10px 0;
 }
 
 .mobile-leader-pill,
@@ -922,13 +923,9 @@ transform: translateY(8px);
 }
 
 .mobile-bid-section {
-
     display: flex;
-
-    gap: 10px;
-
-    margin-top: 18px;
-
+    gap: 8px;
+    margin-top: 10px;
 }
 
 .mobile-bid-input {
@@ -993,13 +990,12 @@ transform: translateY(8px);
 
     border: 1px solid #343b46;
 
-    border-radius: 18px;
+    border-radius: 16px;
 
-    padding: 20px;
+    padding: 12px 14px;
 
     box-shadow:
-
-        0 8px 24px rgba(0,0,0,.35);
+        0 6px 18px rgba(0,0,0,.30);
 
 }
 
@@ -1649,15 +1645,41 @@ button:disabled{
 
     .game-header{
 
-        flex-direction:column;
+        display:flex;
+        flex-direction:row;
+        justify-content:space-between;
+        align-items:flex-start;
 
-        text-align:center;
+        margin-bottom:12px;
 
     }
 
     .game-header h1{
 
-        font-size:2.4rem;
+        font-size:1rem;
+        letter-spacing:.5px;
+        text-transform:none;
+        line-height:1.1;
+
+    }
+
+    .category-pill{
+
+        padding:6px 12px;
+        border-radius:999px;
+
+    }
+
+    .category-pill span{
+
+        display:none;
+
+    }
+
+    .category-pill h2{
+
+        margin:0;
+        font-size:.9rem;
 
     }
 
