@@ -82,7 +82,15 @@ function contenders() {
 // STARTUP
 // =========================
 
-window.addEventListener("DOMContentLoaded", start);
+if (document.readyState === "loading") {
+
+    window.addEventListener("DOMContentLoaded", start);
+
+} else {
+
+    start();
+
+}
 
 
 async function start() {

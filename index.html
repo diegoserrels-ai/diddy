@@ -23,99 +23,212 @@
 
         <p class="subtitle">Build your roster. Win the debate.</p>
 
-        <div class="form-group">
-
-            <label>Players</label>
-
-            <div class="seg" id="playerCount"></div>
-
+        <div id="mockBanner" class="mock-banner" style="display:none;">
+            Test mode. Lobbies stay on this device.
         </div>
 
-        <div class="form-group" id="playerField1">
 
-            <label for="player1Name">Player 1</label>
+        <!-- ============ MENU ============ -->
 
-            <input id="player1Name" type="text" placeholder="Name" autocomplete="off">
+        <section class="screen visible" id="screen-menu">
 
-        </div>
+            <button class="menu-button primary" id="menuLocalButton" type="button">
+                <span class="menu-title">Play on this device</span>
+                <span class="menu-note">Pass one phone around</span>
+            </button>
 
-        <div class="form-group" id="playerField2">
+            <button class="menu-button" id="menuHostButton" type="button">
+                <span class="menu-title">Create online lobby</span>
+                <span class="menu-note">Set it up and share a code</span>
+            </button>
 
-            <label for="player2Name">Player 2</label>
+            <button class="menu-button" id="menuJoinButton" type="button">
+                <span class="menu-title">Join with a code</span>
+                <span class="menu-note">Someone sent you 4 letters</span>
+            </button>
 
-            <input id="player2Name" type="text" placeholder="Name" autocomplete="off">
+        </section>
 
-        </div>
 
-        <div class="form-group" id="playerField3">
+        <!-- ============ LOCAL SETUP ============ -->
 
-            <label for="player3Name">Player 3</label>
+        <section class="screen" id="screen-local">
 
-            <input id="player3Name" type="text" placeholder="Name" autocomplete="off">
-
-        </div>
-
-        <div class="form-group" id="playerField4">
-
-            <label for="player4Name">Player 4</label>
-
-            <input id="player4Name" type="text" placeholder="Name" autocomplete="off">
-
-        </div>
-
-        <div class="form-group">
-
-            <label for="category">Category</label>
-
-            <select id="category"></select>
-
-        </div>
-
-        <div class="form-group" id="sportsModeContainer">
-
-            <label for="sportsMode">Era</label>
-
-            <select id="sportsMode">
-
-                <option value="current">Current players</option>
-
-                <option value="allTime">All-time players</option>
-
-            </select>
-
-        </div>
-
-        <div class="form-row">
+            <h2 class="screen-title">Play on this device</h2>
 
             <div class="form-group">
+                <label>Players</label>
+                <div class="seg" id="playerCount"></div>
+            </div>
 
-                <label for="budget">Starting budget</label>
+            <div class="form-group" id="playerField1">
+                <label for="player1Name">Player 1</label>
+                <input id="player1Name" type="text" placeholder="Name" autocomplete="off">
+            </div>
 
-                <input id="budget" type="number" inputmode="numeric" min="1" value="100">
+            <div class="form-group" id="playerField2">
+                <label for="player2Name">Player 2</label>
+                <input id="player2Name" type="text" placeholder="Name" autocomplete="off">
+            </div>
 
+            <div class="form-group" id="playerField3">
+                <label for="player3Name">Player 3</label>
+                <input id="player3Name" type="text" placeholder="Name" autocomplete="off">
+            </div>
+
+            <div class="form-group" id="playerField4">
+                <label for="player4Name">Player 4</label>
+                <input id="player4Name" type="text" placeholder="Name" autocomplete="off">
             </div>
 
             <div class="form-group">
+                <label for="category">Category</label>
+                <select id="category"></select>
+            </div>
 
-                <label for="rosterSize">Roster size</label>
+            <div class="form-group" id="sportsModeContainer">
+                <label for="sportsMode">Era</label>
+                <select id="sportsMode">
+                    <option value="current">Current players</option>
+                    <option value="allTime">All-time players</option>
+                </select>
+            </div>
 
-                <input id="rosterSize" type="number" inputmode="numeric" min="1" value="5">
+            <div class="form-row">
+
+                <div class="form-group">
+                    <label for="budget">Starting budget</label>
+                    <input id="budget" type="number" inputmode="numeric" min="1" value="100">
+                </div>
+
+                <div class="form-group">
+                    <label for="rosterSize">Roster size</label>
+                    <input id="rosterSize" type="number" inputmode="numeric" min="1" value="5">
+                </div>
 
             </div>
 
-        </div>
+            <button class="start-button" id="startLocalButton" type="button">Start auction</button>
 
-        <button class="start-button" id="startButton" type="button">
+            <button class="link-button" data-back type="button">Back</button>
 
-            Start auction
+        </section>
 
-        </button>
+
+        <!-- ============ HOST SETUP ============ -->
+
+        <section class="screen" id="screen-host">
+
+            <h2 class="screen-title">Create a lobby</h2>
+
+            <p class="screen-note">
+                You pick the settings. Players join with your code and
+                fill the seats as they arrive.
+            </p>
+
+            <div class="form-group">
+                <label for="hostName">Your name</label>
+                <input id="hostName" type="text" placeholder="Name" autocomplete="off">
+            </div>
+
+            <div class="form-group">
+                <label for="hostCategory">Category</label>
+                <select id="hostCategory"></select>
+            </div>
+
+            <div class="form-group" id="hostSportsContainer">
+                <label for="hostSportsMode">Era</label>
+                <select id="hostSportsMode">
+                    <option value="current">Current players</option>
+                    <option value="allTime">All-time players</option>
+                </select>
+            </div>
+
+            <div class="form-row">
+
+                <div class="form-group">
+                    <label for="hostBudget">Starting budget</label>
+                    <input id="hostBudget" type="number" inputmode="numeric" min="1" value="100">
+                </div>
+
+                <div class="form-group">
+                    <label for="hostRosterSize">Roster size</label>
+                    <input id="hostRosterSize" type="number" inputmode="numeric" min="1" value="5">
+                </div>
+
+            </div>
+
+            <button class="start-button" id="createLobbyButton" type="button">Create lobby</button>
+
+            <button class="link-button" data-back type="button">Back</button>
+
+        </section>
+
+
+        <!-- ============ JOIN ============ -->
+
+        <section class="screen" id="screen-join">
+
+            <h2 class="screen-title">Join a lobby</h2>
+
+            <div class="form-group">
+                <label for="joinCode">Lobby code</label>
+                <input id="joinCode" class="code-input" type="text"
+                       inputmode="latin" maxlength="4"
+                       placeholder="ABCD" autocomplete="off"
+                       autocapitalize="characters" spellcheck="false">
+            </div>
+
+            <div class="form-group">
+                <label for="joinName">Your name</label>
+                <input id="joinName" type="text" placeholder="Name" autocomplete="off">
+            </div>
+
+            <button class="start-button" id="joinLobbyButton" type="button">Join lobby</button>
+
+            <button class="link-button" data-back type="button">Back</button>
+
+        </section>
+
+
+        <!-- ============ LOBBY ============ -->
+
+        <section class="screen" id="screen-lobby">
+
+            <h2 class="screen-title">Lobby</h2>
+
+            <div class="code-display">
+
+                <span class="code-label">Share this code</span>
+
+                <div class="code-row">
+                    <span class="code-value" id="lobbyCode">----</span>
+                    <button class="copy-button" id="copyCodeButton" type="button">Copy</button>
+                </div>
+
+            </div>
+
+            <p class="lobby-settings" id="lobbySettings"></p>
+
+            <div class="slots" id="lobbySlots"></div>
+
+            <p class="lobby-status" id="lobbyStatus"></p>
+
+            <button class="start-button" id="startOnlineButton" type="button">Start</button>
+
+            <p class="screen-note" id="lobbyWaitNote">
+                Waiting for the host to start.
+            </p>
+
+            <button class="link-button" id="leaveLobbyButton" type="button">Leave lobby</button>
+
+        </section>
 
     </div>
 
 </div>
 
-<script src="js/settings.js" defer></script>
+<script type="module" src="js/menu.js"></script>
 
 </body>
 </html>

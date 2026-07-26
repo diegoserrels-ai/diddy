@@ -220,6 +220,226 @@ ul{
 
 
 /* =====================================================
+   MENU / LOBBY SCREENS
+===================================================== */
+
+.screen{
+    display:none;
+}
+
+.screen.visible{
+    display:block;
+}
+
+.screen-title{
+    margin-bottom:14px;
+    font-size:1.25rem;
+    font-weight:900;
+    text-align:center;
+}
+
+.screen-note{
+    margin-bottom:16px;
+    color:var(--muted);
+    font-size:.85rem;
+    line-height:1.4;
+    text-align:center;
+}
+
+.mock-banner{
+    margin-bottom:16px;
+    padding:8px 12px;
+    border-radius:10px;
+    background:rgba(255,213,74,.12);
+    border:1px solid rgba(255,213,74,.35);
+    color:var(--gold);
+    font-size:.75rem;
+    font-weight:700;
+    text-align:center;
+}
+
+/* ---------- main menu ---------- */
+
+.menu-button{
+    display:block;
+    width:100%;
+    margin-bottom:12px;
+    padding:16px 18px;
+    border-radius:14px;
+    background:rgba(255,255,255,.05);
+    border:2px solid var(--line);
+    text-align:left;
+    color:var(--white);
+}
+
+.menu-button.primary{
+    background:rgba(77,163,255,.14);
+    border-color:rgba(77,163,255,.5);
+}
+
+.menu-title{
+    display:block;
+    font-size:1.05rem;
+    font-weight:800;
+}
+
+.menu-note{
+    display:block;
+    margin-top:3px;
+    font-size:.78rem;
+    font-weight:600;
+    color:var(--muted);
+}
+
+.link-button{
+    display:block;
+    width:100%;
+    margin-top:12px;
+    padding:12px;
+    background:none;
+    border:none;
+    color:var(--muted);
+    font-size:.85rem;
+    font-weight:700;
+}
+
+/* ---------- code entry ---------- */
+
+.code-input{
+    text-align:center;
+    letter-spacing:10px;
+    font-size:1.6rem !important;
+    font-weight:900;
+    text-transform:uppercase;
+}
+
+/* ---------- lobby ---------- */
+
+.code-display{
+    margin-bottom:14px;
+    padding:14px;
+    border-radius:16px;
+    background:rgba(255,213,74,.08);
+    border:2px solid rgba(255,213,74,.3);
+    text-align:center;
+}
+
+.code-label{
+    display:block;
+    margin-bottom:6px;
+    font-size:.7rem;
+    font-weight:800;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    color:var(--muted);
+}
+
+.code-row{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:12px;
+}
+
+.code-value{
+    font-size:2.4rem;
+    font-weight:900;
+    letter-spacing:8px;
+    color:var(--gold);
+}
+
+.copy-button{
+    padding:8px 14px;
+    border-radius:10px;
+    background:rgba(255,255,255,.08);
+    border:1px solid var(--line);
+    color:var(--gray);
+    font-size:.75rem;
+}
+
+.lobby-settings{
+    margin-bottom:14px;
+    font-size:.8rem;
+    font-weight:700;
+    color:var(--gray);
+    text-align:center;
+}
+
+.slots{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    margin-bottom:14px;
+}
+
+.slot{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    padding:13px 14px;
+    border-radius:12px;
+    background:rgba(255,255,255,.03);
+    border:1px dashed rgba(255,255,255,.14);
+}
+
+.slot.filled{
+    background:rgba(61,220,132,.1);
+    border:1px solid rgba(61,220,132,.32);
+}
+
+.slot-name{
+    font-size:1rem;
+    font-weight:800;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+
+.slot-empty{
+    font-size:.85rem;
+    font-style:italic;
+    color:var(--muted);
+}
+
+.slot-tags{
+    display:flex;
+    gap:6px;
+    flex:0 0 auto;
+}
+
+.slot-tag{
+    padding:3px 9px;
+    border-radius:999px;
+    font-size:.62rem;
+    font-weight:800;
+    letter-spacing:.4px;
+    text-transform:uppercase;
+}
+
+.slot-tag.host{
+    background:rgba(255,213,74,.18);
+    border:1px solid rgba(255,213,74,.4);
+    color:var(--gold);
+}
+
+.slot-tag.you{
+    background:rgba(77,163,255,.18);
+    border:1px solid rgba(77,163,255,.4);
+    color:var(--blue);
+}
+
+.lobby-status{
+    margin-bottom:10px;
+    font-size:.85rem;
+    font-weight:700;
+    color:var(--green);
+    text-align:center;
+    min-height:1.2em;
+}
+
+
+/* =====================================================
    GAME SHELL
 ===================================================== */
 
