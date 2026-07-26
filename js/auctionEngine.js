@@ -52,6 +52,24 @@ import {
     playSoldSound
 } from "./sound.js";
 
+import { setSeatLock } from "./ui.js";
+
+import * as net from "./net.js";
+
+
+// "local"  one device, pass and play
+// "host"   online, this browser is the referee
+// "guest"  online, this browser shows what the host publishes
+let mode = "local";
+
+let mySeat = 0;
+let roomCode = null;
+
+// Copies of what is on screen, so the host can publish them.
+let lastMessage = "";
+let lastPopup = null;
+let revision = 0;
+
 
 const BID_POPUP = 900;
 const SOLD_POPUP = 1250;
@@ -61,6 +79,170 @@ const RANDOM_POPUP = 1800;
 
 function el(id) {
     return document.getElementById(id);
+}
+
+
+// Anything that changes what people see goes through these three, so
+// the host can push the same picture out to everyone else.
+
+function say(text) {
+
+    lastMessage = text;
+
+    setMessage(text);
+
+    publish();
+
+}
+
+
+function popup(title, who, amount, item) {
+
+    lastPopup = { title, who, amount, item };
+
+    showNotification(title, who, amount, item);
+
+    publish();
+
+}
+
+
+function unpopup() {
+
+    lastPopup = null;
+
+    hideNotification();
+
+    publish();
+
+}
+
+
+function sync() {
+
+    render();
+
+    publish();
+
+}
+
+
+function publish() {
+
+    if (mode !== "host" || !roomCode) return;
+
+    net.publishState(roomCode, serialize()).catch(error => {
+
+        console.error("Could not publish game state", error);
+
+    });
+
+}
+
+
+// What the host sends out. The deck is deliberately left out: it
+// would be a big payload and it would spoil the upcoming items.
+
+function serialize() {
+
+    const a = game.auction;
+
+    return {
+
+        rev: ++revision,
+
+        players: game.players.map(p => ({
+            name: p.name,
+            money: p.money,
+            roster: p.roster
+        })),
+
+        item: a.currentItem,
+        bid: a.currentBid,
+        leader: a.highestBidder,
+        turn: a.currentTurn,
+        out: a.out,
+        round: a.round,
+
+        rosterSize: game.settings.rosterSize,
+
+        skipLeft: game.neitherKnows.remaining,
+        votes: game.neitherKnows.votes,
+
+        over: game.status.gameOver,
+
+        message: lastMessage,
+        popup: lastPopup
+
+    };
+
+}
+
+
+// Firebase drops empty arrays and turns arrays into objects, so
+// rebuild them at a known length rather than trusting what arrives.
+
+function boolArray(raw, length) {
+
+    return Array.from({ length }, (_, i) => !!(raw && raw[i]));
+
+}
+
+
+function applyState(s) {
+
+    if (!s) return;
+
+    game.players.forEach((p, i) => {
+
+        const incoming = s.players && s.players[i];
+
+        if (!incoming) return;
+
+        p.name = incoming.name ?? p.name;
+        p.money = incoming.money ?? 0;
+        p.roster = incoming.roster || [];
+
+    });
+
+    if (s.rosterSize) game.settings.rosterSize = s.rosterSize;
+
+    const a = game.auction;
+
+    a.currentItem = s.item || null;
+    a.currentBid = s.bid || 0;
+    a.highestBidder = (s.leader === null || s.leader === undefined) ? null : s.leader;
+    a.currentTurn = s.turn || 0;
+    a.out = boolArray(s.out, game.players.length);
+    a.round = s.round || 1;
+
+    game.neitherKnows.remaining = s.skipLeft || 0;
+    game.neitherKnows.votes = boolArray(s.votes, game.players.length);
+
+    game.status.gameOver = !!s.over;
+
+    setMessage(s.message || "");
+
+    lastPopup = s.popup || null;
+
+    if (s.popup) {
+
+        showNotification(s.popup.title, s.popup.who, s.popup.amount, s.popup.item);
+
+    } else {
+
+        hideNotification();
+
+    }
+
+    render();
+
+    if (game.status.gameOver) openAllRosters();
+
+    updateActionButtons();
+
+    primeBidInput();
+
 }
 
 function nameOf(index) {
@@ -107,6 +289,28 @@ async function start() {
 
     const settings = JSON.parse(saved);
 
+    if (settings.mode === "online") {
+
+        return startOnline(settings);
+
+    }
+
+    return startLocal(settings);
+
+}
+
+
+
+// =========================
+// ONE DEVICE
+// =========================
+
+async function startLocal(settings) {
+
+    mode = "local";
+
+    setSeatLock(null);
+
     // Older saved games stored player1 / player2 instead of a list.
     if (!settings.names) {
 
@@ -119,6 +323,138 @@ async function start() {
 
     resetGame();
 
+    if (!(await buildDeck())) return;
+
+    game.status.started = true;
+
+    wireControls();
+
+    setSkipVoteHandler(toggleSkipVote);
+
+    render();
+
+    startRound();
+
+}
+
+
+
+// =========================
+// ONLINE
+// =========================
+//
+// Both sides watch the room. The host also runs the draft and
+// publishes what happens; everyone else just draws it.
+
+async function startOnline(settings) {
+
+    roomCode = settings.code;
+
+    setMessage("Connecting...");
+
+    try {
+
+        await net.connect();
+
+    } catch (error) {
+
+        console.error(error);
+
+        setMessage("Could not connect. Check your connection and reload.");
+
+        return;
+
+    }
+
+    let ready = false;
+
+    net.watchRoom(roomCode, async room => {
+
+        if (!room) {
+
+            setMessage("This lobby is gone. Start a new game.");
+
+            return;
+
+        }
+
+        const players = net.playerList(room);
+
+        const me = players.find(p => p.uid === net.myUid());
+
+        if (!me) {
+
+            setMessage("You are not in this game any more.");
+
+            return;
+
+        }
+
+        // Worked out from the room itself rather than trusting
+        // whatever was saved before the game started.
+        const amHost = room.hostUid === net.myUid();
+
+        if (!ready) {
+
+            ready = true;
+
+            mode = amHost ? "host" : "guest";
+            mySeat = me.seat;
+
+            setSeatLock(mySeat);
+
+            game.settings = {
+                ...game.settings,
+                ...room.settings,
+                names: players.map(p => p.name)
+            };
+
+            resetGame();
+
+            wireControls();
+
+            setSkipVoteHandler(seat => sendOrApply({ type: "skip", seat: seat }));
+
+            net.keepSeatOnDisconnect(roomCode).catch(() => {});
+
+            if (mode === "host") {
+
+                await net.clearActions(roomCode);
+
+                if (!(await buildDeck())) return;
+
+                game.status.started = true;
+
+                net.watchActions(roomCode, applyRemoteAction);
+
+                render();
+
+                startRound();
+
+                return;
+
+            }
+
+            setMessage("Waiting for the host to deal the first item...");
+
+        }
+
+        if (mode === "guest" && room.state) {
+
+            applyState(room.state);
+
+        }
+
+    });
+
+}
+
+
+// Loads the item list and trims the roster size if the category is
+// too small. Returns false when there is nothing to play with.
+
+async function buildDeck() {
+
     try {
 
         await loadAuctionDeck();
@@ -129,12 +465,10 @@ async function start() {
 
         setMessage("Could not load the items for this category. Check the data folder.");
 
-        return;
+        return false;
 
     }
 
-    // Not enough items for everyone? Shrink the rosters instead of
-    // running dry halfway through.
     const needed = playerCount() * game.settings.rosterSize;
 
     if (game.auction.deck.length < needed) {
@@ -150,15 +484,65 @@ async function start() {
 
     }
 
-    game.status.started = true;
+    return true;
 
-    wireControls();
+}
 
-    setSkipVoteHandler(toggleSkipVote);
 
-    render();
 
-    startRound();
+// =========================
+// ACTIONS FROM OTHER PEOPLE
+// =========================
+
+// A guest sends its move to the host. The host just does it.
+
+function sendOrApply(action) {
+
+    if (mode === "guest") {
+
+        net.sendAction(roomCode, action).catch(error => {
+
+            console.error("Could not send that action", error);
+
+        });
+
+        return;
+
+    }
+
+    applyRemoteAction(action);
+
+}
+
+
+function applyRemoteAction(action) {
+
+    if (mode === "guest") return;
+
+    if (!action) return;
+
+    if (action.type === "skip") {
+
+        return toggleSkipVote(action.seat);
+
+    }
+
+    if (game.status.gameOver) return;
+
+    // Somebody tapped out of turn, or a stale message arrived late.
+    if (action.seat !== game.auction.currentTurn) return;
+
+    if (action.type === "bid") {
+
+        return submitBid(Number(action.amount));
+
+    }
+
+    if (action.type === "pass") {
+
+        return passBid();
+
+    }
 
 }
 
@@ -237,7 +621,7 @@ function startRound() {
 
     focusBidInput();
 
-    setMessage(
+    say(
 
         bidders.length === 1
             ? `${nameOf(a.currentTurn)} is the only one who can bid. Open at $1 or pass it along.`
@@ -263,16 +647,29 @@ function updateActionButtons() {
 
     }
 
+    // A sold / bid popup is covering the board. Nothing is clickable
+    // underneath it, so do not make the buttons look like they are.
+    if (lastPopup) {
+
+        lockControls();
+
+        return;
+
+    }
+
     const a = game.auction;
 
     const me = game.players[a.currentTurn];
 
     // You need to be able to beat the current bid.
-    const canBid = !a.out[a.currentTurn] && me.money > a.currentBid;
+    // Online, the controls only wake up on your own turn.
+    const myTurn = mode === "local" || mySeat === a.currentTurn;
+
+    const canBid = myTurn && !a.out[a.currentTurn] && me.money > a.currentBid;
 
     // Passing is only allowed once there is a bid to pass on,
     // or when you are the only person who can bid at all.
-    const canPass = a.currentBid > 0 || contenders().length === 1;
+    const canPass = myTurn && (a.currentBid > 0 || contenders().length === 1);
 
     setControlsEnabled(canBid, canPass);
 
@@ -283,6 +680,8 @@ function updateActionButtons() {
 // so only do it where there is room.
 
 function focusBidInput() {
+
+    if (mode !== "local" && mySeat !== game.auction.currentTurn) return;
 
     if (!window.matchMedia("(min-width: 900px)").matches) return;
 
@@ -299,11 +698,19 @@ function focusBidInput() {
 // PLACE BID
 // =========================
 
+// Runs on whichever device pressed the button. Checks the obvious
+// mistakes so the person gets an instant answer, then either applies
+// the bid (host or local) or sends it on (guest).
+
 function placeBid() {
 
     if (game.status.gameOver) return;
 
     const a = game.auction;
+
+    const seat = mode === "local" ? a.currentTurn : mySeat;
+
+    if (mode !== "local" && seat !== a.currentTurn) return;
 
     const bidder = game.players[a.currentTurn];
 
@@ -339,6 +746,36 @@ function placeBid() {
 
     }
 
+    if (mode === "guest") {
+
+        sendOrApply({ type: "bid", seat: seat, amount: amount });
+
+        setControlsEnabled(false, false);
+
+        return;
+
+    }
+
+    submitBid(amount);
+
+}
+
+
+// The real thing. Only ever runs on the host or in a local game, so
+// there is one place where a bid actually counts.
+
+function submitBid(amount) {
+
+    if (game.status.gameOver) return;
+
+    const a = game.auction;
+
+    const bidder = game.players[a.currentTurn];
+
+    if (!Number.isInteger(amount)) return;
+    if (amount <= a.currentBid) return;
+    if (amount > bidder.money) return;
+
     a.currentBid = amount;
     a.highestBidder = a.currentTurn;
 
@@ -355,18 +792,13 @@ function placeBid() {
 
     render();
 
-    showNotification(
-        "BID",
-        `${bidder.name} bids`,
-        `$${amount}`,
-        a.currentItem.name
-    );
+    popup("BID", `${bidder.name} bids`, `$${amount}`, a.currentItem.name);
 
     playBidSound();
 
     setTimeout(() => {
 
-        hideNotification();
+        unpopup();
 
         afterBid();
 
@@ -400,7 +832,7 @@ function afterBid() {
 
     focusBidInput();
 
-    setMessage(`${nameOf(a.currentTurn)}: raise it or pass.`);
+    say(`${nameOf(a.currentTurn)}: raise it or pass.`);
 
 }
 
@@ -415,6 +847,18 @@ function passBid() {
     if (game.status.gameOver) return;
 
     const a = game.auction;
+
+    if (mode === "guest") {
+
+        if (mySeat !== a.currentTurn) return;
+
+        sendOrApply({ type: "pass", seat: mySeat });
+
+        setControlsEnabled(false, false);
+
+        return;
+
+    }
 
     const passer = a.currentTurn;
 
@@ -439,7 +883,7 @@ function passBid() {
         const lucky =
             candidates[Math.floor(Math.random() * candidates.length)];
 
-        setMessage(
+        say(
             `${nameOf(passer)} passed. ${nameOf(lucky)} was drawn at random from ${candidates.length}.`
         );
 
@@ -468,7 +912,7 @@ function passBid() {
 
     focusBidInput();
 
-    setMessage(`${nameOf(passer)} passed. ${nameOf(a.currentTurn)} is up.`);
+    say(`${nameOf(passer)} passed. ${nameOf(a.currentTurn)} is up.`);
 
 }
 
@@ -513,7 +957,7 @@ function recordPick(index, item, price) {
 // mode: "sold" (normal), "free" (nobody could pay),
 // "random" (someone passed and the winner was drawn)
 
-function awardItem(index, price, mode = "sold") {
+function awardItem(index, price, how = "sold") {
 
     const a = game.auction;
 
@@ -523,27 +967,27 @@ function awardItem(index, price, mode = "sold") {
 
     render();
 
-    const popup = {
+    const shout = {
 
         sold:   ["SOLD", `${winner.name} wins`, `$${price}`],
         free:   ["FREE PICK", `${winner.name} picks up`, `$${price}`],
         random: ["PASSED ON", `Randomly awarded to ${winner.name}`, "FREE"]
 
-    }[mode];
+    }[how];
 
-    showNotification(popup[0], popup[1], popup[2], a.currentItem.name);
+    popup(shout[0], shout[1], shout[2], a.currentItem.name);
 
-    if (mode !== "free") playSoldSound();
+    if (how !== "free") playSoldSound();
 
     // The random draw gets a longer beat so nobody misses who got it.
     const hold =
-        mode === "sold" ? SOLD_POPUP
-        : mode === "random" ? RANDOM_POPUP
+        how === "sold" ? SOLD_POPUP
+        : how === "random" ? RANDOM_POPUP
         : FREE_POPUP;
 
     setTimeout(() => {
 
-        hideNotification();
+        unpopup();
 
         continueDraft();
 
@@ -614,6 +1058,8 @@ function continueDraft() {
 
 function toggleSkipVote(index) {
 
+    if (mode === "guest") return;
+
     if (game.status.gameOver) return;
 
     const nk = game.neitherKnows;
@@ -623,6 +1069,8 @@ function toggleSkipVote(index) {
     nk.votes[index] = !nk.votes[index];
 
     updateSkipBar();
+
+    publish();
 
     const voters = game.players.filter(p => stillDrafting(p.index));
 
@@ -638,7 +1086,7 @@ function toggleSkipVote(index) {
 
     lockControls();
 
-    setMessage("Skipped. Nobody knew that one.");
+    say("Skipped. Nobody knew that one.");
 
     setTimeout(startRound, 400);
 
@@ -654,6 +1102,8 @@ function finishDraft(reason) {
 
     game.status.gameOver = true;
 
+    lastPopup = null;
+
     hideNotification();
 
     lockControls();
@@ -662,7 +1112,9 @@ function finishDraft(reason) {
 
     openAllRosters();
 
-    setMessage(
+    publish();
+
+    say(
         reason ||
         "Draft complete. Compare the rosters and argue it out."
     );
@@ -676,3 +1128,12 @@ function finishDraft(reason) {
 // =========================
 
 window.game = game;
+
+// Handy when something looks out of sync: run netDebug() in the console.
+window.netDebug = () => ({
+    mode: mode,
+    mySeat: mySeat,
+    room: roomCode,
+    turn: game.auction.currentTurn,
+    bidDisabled: document.getElementById("bidButton").disabled
+});

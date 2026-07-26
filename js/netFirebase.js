@@ -14,8 +14,8 @@ import { getAuth, signInAnonymously, onAuthStateChanged }
     from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 
 import {
-    getDatabase, ref, get, set, update, remove,
-    onValue, onDisconnect, runTransaction, serverTimestamp
+    getDatabase, ref, get, set, update, remove, push,
+    onValue, onChildAdded, onDisconnect, runTransaction, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js";
 
 import { firebaseConfig, MAX_PLAYERS } from "./firebaseConfig.js";
@@ -259,5 +259,56 @@ function makeCode() {
     }
 
     return code;
+
+}
+
+
+// =========================
+// GAME STATE CHANNEL
+// =========================
+//
+// Only the host writes here. Everyone else reads it and draws
+// whatever it says.
+
+export async function publishState(code, state) {
+
+    await set(roomRef(code, "/state"), state);
+
+}
+
+
+// =========================
+// ACTION CHANNEL
+// =========================
+//
+// Players push what they want to do. The host reads each one,
+// applies it, and deletes it. Pushing gives every action its own
+// key, so two people acting at once cannot overwrite each other.
+
+export async function sendAction(code, action) {
+
+    await push(roomRef(code, "/actions"), action);
+
+}
+
+
+export function watchActions(code, callback) {
+
+    return onChildAdded(roomRef(code, "/actions"), snapshot => {
+
+        const action = snapshot.val();
+
+        remove(snapshot.ref);
+
+        callback(action);
+
+    });
+
+}
+
+
+export async function clearActions(code) {
+
+    await remove(roomRef(code, "/actions"));
 
 }

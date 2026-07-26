@@ -514,8 +514,8 @@ async function startOnlineGame() {
 }
 
 
-// Step two wires this into game.html. For now it proves every device
-// saw the start at the same moment.
+// Everyone lands here the moment the host starts. Each device saves
+// who it is, then goes to the game screen.
 
 function handoffToGame(room) {
 
@@ -537,8 +537,10 @@ function handoffToGame(room) {
 
     }));
 
-    el("lobbyStatus").textContent =
-        "Everyone is in. Game screen comes next.";
+    el("lobbyStatus").textContent = "Starting...";
+
+    // Keeps ?mock=1 on the address when testing offline.
+    location.href = "game.html" + location.search;
 
 }
 

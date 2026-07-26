@@ -17,6 +17,18 @@ const openRosters = new Set();
 // Filled in by auctionEngine so a tapped name can cast a skip vote.
 let onSkipVote = () => {};
 
+// Online only. The seat this device controls, so we can grey out
+// everyone else's controls. Stays null for pass-and-play.
+let mySeat = null;
+
+export function setSeatLock(seat) {
+    mySeat = seat;
+}
+
+export function seatLock() {
+    return mySeat;
+}
+
 export function setSkipVoteHandler(handler) {
     onSkipVote = handler;
 }
@@ -85,7 +97,9 @@ export function updateAuction() {
     el("turnDisplay").textContent =
         game.status.gameOver
             ? "Draft complete"
-            : `${game.players[game.auction.currentTurn].name}'s turn`;
+            : mySeat === game.auction.currentTurn
+                ? "Your turn"
+                : `${game.players[game.auction.currentTurn].name}'s turn`;
 
 }
 
@@ -172,7 +186,10 @@ export function updateSkipBar() {
             "skip-chip" + (nk.votes[p.index] ? " voted" : "");
 
         chip.textContent = p.name;
-        chip.disabled = locked;
+
+        // Pass-and-play lets one device tap everyone. Online, you can
+        // only speak for yourself.
+        chip.disabled = locked || (mySeat !== null && p.index !== mySeat);
 
         chip.addEventListener("click", () => onSkipVote(p.index));
 

@@ -220,3 +220,79 @@ function makeCode() {
     return code;
 
 }
+
+
+// =========================
+// GAME STATE CHANNEL
+// =========================
+
+export async function publishState(code, state) {
+
+    const room = readRoom(code);
+
+    if (!room) return;
+
+    room.state = state;
+
+    writeRoom(code, room);
+
+}
+
+
+// =========================
+// ACTION CHANNEL
+// =========================
+
+export async function sendAction(code, action) {
+
+    const room = readRoom(code);
+
+    if (!room) return;
+
+    room.actions = room.actions || {};
+
+    room.actions["a" + Date.now() + Math.random().toString(36).slice(2, 7)] = action;
+
+    writeRoom(code, room);
+
+}
+
+
+export function watchActions(code, callback) {
+
+    const tick = () => {
+
+        const room = readRoom(code);
+
+        if (!room || !room.actions) return;
+
+        const entries = Object.entries(room.actions);
+
+        if (!entries.length) return;
+
+        room.actions = {};
+
+        writeRoom(code, room);
+
+        entries.forEach(([, action]) => callback(action));
+
+    };
+
+    const timer = setInterval(tick, 120);
+
+    return () => clearInterval(timer);
+
+}
+
+
+export async function clearActions(code) {
+
+    const room = readRoom(code);
+
+    if (!room) return;
+
+    room.actions = {};
+
+    writeRoom(code, room);
+
+}
