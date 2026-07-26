@@ -1,12 +1,11 @@
 /* =====================================================
    AUCTION DRAFT DEBATE
-   STYLE.CSS  v4.0
+   STYLE.CSS  v5.0
 
-   Written phone first. Everything below is the compact
-   layout, and the block near the bottom marked
-   "WIDER SCREENS" grows it into the desktop version.
-   There is only one set of markup now, so anything you
-   change here changes both.
+   Written phone first. Everything up to "WIDER SCREENS"
+   is the compact phone layout, and that section grows it
+   into the big desktop scoreboard. One set of markup, so
+   a change here lands on both.
 ===================================================== */
 
 
@@ -186,11 +185,9 @@ ul{
     gap:14px;
 }
 
-/* Player count picker */
-
 .seg{
     display:grid;
-    grid-template-columns:repeat(3,1fr);
+    grid-template-columns:repeat(3,minmax(0,1fr));
     gap:8px;
 }
 
@@ -235,32 +232,32 @@ ul{
     gap:8px;
 }
 
+/* On a phone the title and category sit centred in a stack.
+   Reads like a broadcast bug and keeps the pill off the edge. */
+
 .topbar{
     display:flex;
-    justify-content:space-between;
+    flex-direction:column;
     align-items:center;
-    gap:10px;
+    gap:5px;
 }
 
 .topbar h1{
-    font-size:.92rem;
+    font-size:.85rem;
     font-weight:800;
     line-height:1.15;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
     color:var(--gold);
-    letter-spacing:.3px;
 }
 
-/* Category pill: also carries roster size, era and player count
-   so nobody has to remember what they picked on the setup screen */
-
 .category-pill{
-    flex:0 0 auto;
-    max-width:60%;
-    text-align:right;
+    max-width:100%;
+    text-align:center;
     background:var(--card);
     border:1px solid var(--line);
-    border-radius:14px;
-    padding:6px 12px;
+    border-radius:999px;
+    padding:5px 16px;
 }
 
 .cp-label{
@@ -284,13 +281,22 @@ ul{
 
 /* =====================================================
    BOARD
+
+   minmax(0,1fr) rather than plain 1fr. A 1fr track refuses
+   to shrink below the widest thing inside it, which pushed
+   the whole board wider than the phone screen.
 ===================================================== */
 
 .board{
     display:grid;
-    grid-template-columns:1fr;
+    grid-template-columns:minmax(0,1fr);
     gap:8px;
     align-items:start;
+}
+
+.auction,
+.player-card{
+    min-width:0;
 }
 
 
@@ -310,7 +316,7 @@ ul{
 
 .auction-banner{
     display:inline-block;
-    background:var(--gold);
+    background:linear-gradient(180deg,var(--gold),var(--goldDark));
     color:#222;
     padding:4px 14px;
     border-radius:999px;
@@ -332,11 +338,9 @@ ul{
     word-break:break-word;
 }
 
-/* The two small pills: bid on the left, leader on the right */
-
 .stat-row{
     display:grid;
-    grid-template-columns:1fr 1fr;
+    grid-template-columns:repeat(2,minmax(0,1fr));
     gap:8px;
 }
 
@@ -379,16 +383,15 @@ ul{
     color:var(--blue);
 }
 
-
-/* Bid, place and pass all on one line */
-
 .bid-controls{
     display:flex;
     gap:7px;
+    min-width:0;
 }
 
 #bidAmount{
-    flex:1;
+    flex:1 1 0;
+    width:0;
     min-width:0;
     height:46px;
     padding:0 10px;
@@ -408,6 +411,7 @@ ul{
 
 #bidButton,
 #passButton{
+    flex:0 0 auto;
     height:46px;
     padding:0 16px;
     border-radius:12px;
@@ -431,8 +435,8 @@ ul{
 
 /* =====================================================
    NEITHER KNOWS
-   One compact strip. Everyone taps their own name and
-   the item is skipped once all of them have.
+   Everyone taps their own name. The item is skipped once
+   all of them have.
 ===================================================== */
 
 .skip-bar{
@@ -445,6 +449,7 @@ ul{
     display:flex;
     justify-content:space-between;
     align-items:center;
+    gap:8px;
     margin-bottom:6px;
 }
 
@@ -459,13 +464,14 @@ ul{
 .skip-meta{
     font-size:.68rem;
     color:var(--muted);
+    white-space:nowrap;
     font-variant-numeric:tabular-nums;
 }
 
 .skip-chips{
     display:flex;
-    flex-wrap:wrap;
     gap:6px;
+    min-width:0;
 }
 
 .skip-chip{
@@ -492,8 +498,6 @@ ul{
 .skip-bar.locked{
     opacity:.45;
 }
-
-/* Bidding and skipping are done once the draft ends */
 
 .auction.is-over .bid-controls,
 .auction.is-over .skip-bar,
@@ -523,6 +527,7 @@ ul{
     transform:scale(.96);
     transition:opacity .2s ease,transform .2s ease,visibility .2s;
     z-index:30;
+    overflow:hidden;
 }
 
 .notification.show{
@@ -542,6 +547,7 @@ ul{
 .notif-player{
     font-size:1rem;
     font-weight:700;
+    line-height:1.2;
 }
 
 .notif-amount{
@@ -555,13 +561,14 @@ ul{
     font-size:.9rem;
     opacity:.85;
     line-height:1.2;
+    word-break:break-word;
 }
 
 
 /* =====================================================
    PLAYER CARDS
-   One tappable row per player on a phone. Tap the row
-   to open that player's roster underneath it.
+   One tappable row per player on a phone. Tap it to open
+   that player's roster underneath.
 ===================================================== */
 
 .player-card{
@@ -607,6 +614,7 @@ ul{
     justify-content:space-between;
     align-items:center;
     gap:8px;
+    min-width:0;
 }
 
 .pc-name{
@@ -641,6 +649,7 @@ ul{
     font-size:.75rem;
     font-weight:700;
     color:var(--muted);
+    white-space:nowrap;
     font-variant-numeric:tabular-nums;
 }
 
@@ -655,6 +664,7 @@ ul{
     color:var(--green);
     font-size:.85rem;
     font-weight:900;
+    white-space:nowrap;
     font-variant-numeric:tabular-nums;
 }
 
@@ -678,8 +688,6 @@ ul{
 .chev.open{
     transform:rotate(180deg);
 }
-
-/* Text pills only appear where there is room for them */
 
 .pc-pills{
     display:none;
@@ -742,6 +750,14 @@ ul{
     background:rgba(255,255,255,.05);
     border-left:3px solid var(--gold);
     font-size:.84rem;
+    min-width:0;
+}
+
+.roster-item > span:first-child{
+    min-width:0;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
 }
 
 .roster-price{
@@ -767,10 +783,11 @@ ul{
     display:flex;
     align-items:center;
     gap:10px;
+    min-width:0;
 }
 
 .message-bar{
-    flex:1;
+    flex:1 1 0;
     min-width:0;
     padding:10px 12px;
     border-radius:12px;
@@ -794,9 +811,38 @@ ul{
 }
 
 
+/* The banner is decoration. On a phone the item name already
+   makes it obvious what is being auctioned. */
+
+@media (max-width:640px){
+
+    .auction-banner{
+        display:none;
+    }
+
+    #currentItem{
+        margin-top:2px;
+    }
+
+}
+
+
+/* Very small phones: keep the bid row on one line */
+
+@media (max-width:340px){
+
+    #bidButton,
+    #passButton{
+        padding:0 11px;
+        font-size:.78rem;
+    }
+
+}
+
+
 /* =====================================================
    WIDER SCREENS
-   Everything above stays. This section only grows it.
+   The full scoreboard: big name, bank box, roster board.
 ===================================================== */
 
 @media (min-width:900px){
@@ -828,16 +874,25 @@ ul{
         gap:22px;
     }
 
+    /* Title left, category pill right, like a broadcast header */
+
+    .topbar{
+        flex-direction:row;
+        justify-content:space-between;
+        align-items:center;
+        gap:20px;
+    }
+
     .topbar h1{
         font-size:2.4rem;
-        letter-spacing:1.5px;
-        text-transform:uppercase;
+        letter-spacing:2px;
+        text-shadow:0 4px 18px rgba(255,213,74,.22);
     }
 
     .category-pill{
-        padding:12px 22px;
-        border-radius:999px;
+        padding:12px 26px;
         border-width:2px;
+        box-shadow:var(--shadow);
     }
 
     .cp-label{
@@ -849,7 +904,7 @@ ul{
     }
 
     .cp-name{
-        font-size:1.15rem;
+        font-size:1.2rem;
         margin-top:2px;
     }
 
@@ -862,11 +917,10 @@ ul{
         gap:24px;
     }
 
-    /* Two players keep the classic left / centre / right split.
-       The auction sits in the middle column. */
+    /* Two players keep the classic left / centre / right split */
 
     .board[data-count="2"]{
-        grid-template-columns:300px minmax(0,1fr) 300px;
+        grid-template-columns:310px minmax(0,1fr) 310px;
     }
 
     .board[data-count="2"] > .player-card:nth-of-type(1){
@@ -881,8 +935,7 @@ ul{
         order:3;
     }
 
-    /* Three or four players: auction across the top,
-       player cards in a row underneath. */
+    /* Three or four: auction across the top, players beneath */
 
     .board[data-count="3"]{
         grid-template-columns:repeat(3,minmax(0,1fr));
@@ -897,68 +950,82 @@ ul{
         grid-column:1 / -1;
     }
 
+    /* ---------- auction ---------- */
+
     .auction{
-        padding:30px;
+        padding:34px 30px;
         border-radius:24px;
+        border:2px solid rgba(255,213,74,.12);
         box-shadow:var(--shadow);
     }
 
     .auction-banner{
-        padding:9px 22px;
-        font-size:.8rem;
-        letter-spacing:2px;
+        padding:10px 26px;
+        font-size:.82rem;
+        letter-spacing:2.5px;
+        box-shadow:0 6px 20px rgba(255,213,74,.28);
+        animation:bannerPulse 2.6s ease-in-out infinite;
     }
 
     #currentItem{
-        margin:22px 0;
-        font-size:2.6rem;
-        min-height:1.6em;
+        margin:26px 0;
+        font-size:3rem;
+        min-height:1.5em;
+        text-shadow:0 6px 24px rgba(0,0,0,.55);
     }
 
     .stat-row{
-        gap:16px;
+        gap:18px;
     }
 
     .stat{
-        padding:14px 16px;
-        border-radius:14px;
+        padding:18px;
+        border-radius:16px;
     }
 
     .stat-label{
-        font-size:.7rem;
+        font-size:.72rem;
+        letter-spacing:2px;
     }
 
     .stat-value{
-        margin-top:6px;
-        font-size:1.8rem;
+        margin-top:8px;
+        font-size:2.6rem;
     }
 
     #turnDisplay{
-        margin:20px 0;
-        font-size:1.15rem;
+        margin:24px 0;
+        font-size:1.2rem;
+        letter-spacing:.5px;
     }
 
     .bid-controls{
         justify-content:center;
-        gap:12px;
+        gap:14px;
     }
 
     #bidAmount{
         flex:0 0 auto;
-        width:160px;
-        height:52px;
+        width:170px;
+        height:54px;
+        font-size:1.1rem;
     }
 
     #bidButton,
     #passButton{
-        height:52px;
-        padding:0 30px;
-        font-size:.95rem;
+        height:54px;
+        padding:0 34px;
+        font-size:1rem;
+        letter-spacing:1.5px;
+    }
+
+    #bidButton{
+        box-shadow:0 8px 22px rgba(77,163,255,.3);
     }
 
     .skip-bar{
-        margin-top:20px;
-        padding-top:14px;
+        margin-top:24px;
+        padding-top:16px;
     }
 
     .skip-title,
@@ -972,12 +1039,12 @@ ul{
 
     .skip-chip{
         flex:0 0 auto;
-        padding:9px 18px;
+        padding:10px 20px;
         font-size:.85rem;
     }
 
     .notif-title{
-        font-size:1.8rem;
+        font-size:1.9rem;
     }
 
     .notif-player{
@@ -985,57 +1052,137 @@ ul{
     }
 
     .notif-amount{
-        font-size:3.6rem;
+        font-size:3.8rem;
     }
 
     .notif-item{
         font-size:1.2rem;
     }
 
-    /* Rosters are always visible when there is room for them */
+    /* ---------- player scoreboard ---------- */
 
     .player-card{
-        padding:18px;
-        border-radius:20px;
+        padding:22px;
+        border-radius:22px;
         border-width:2px;
+        box-shadow:var(--shadow);
+    }
+
+    .player-card.active{
+        animation:cardGlow 2.6s ease-in-out infinite;
+    }
+
+    .player-card.leading{
+        border-color:rgba(255,213,74,.5);
     }
 
     .pc-head{
         cursor:default;
     }
 
+    .pc-line{
+        flex-direction:column;
+        align-items:stretch;
+        gap:16px;
+    }
+
     .pc-name{
-        font-size:1.3rem;
+        justify-content:center;
+        font-size:1.75rem;
+        letter-spacing:.5px;
     }
 
-    .pc-pills{
-        display:flex;
-    }
+    /* The bank box: big money on top, picks counted underneath.
+       column-reverse puts the money above the count without
+       needing to change the markup. */
 
-    .pc-count{
-        font-size:.85rem;
-    }
-
-    .player-card.passed{
-        opacity:1;
+    .pc-right{
+        flex-direction:column-reverse;
+        align-items:center;
+        gap:6px;
+        width:100%;
+        padding:16px 12px;
+        border-radius:16px;
+        background:rgba(255,255,255,.05);
     }
 
     .pc-money{
-        font-size:1.15rem;
-        padding:5px 14px;
+        display:block;
+        width:100%;
+        padding:0;
+        background:none;
+        text-align:center;
+        font-size:2.3rem;
+        line-height:1.05;
     }
 
-    .pc-roster{
+    .player-card.leading .pc-money{
+        background:none;
+    }
+
+    .pc-money::before{
+        content:"💰 BANK";
         display:block;
+        margin-bottom:8px;
+        font-size:.7rem;
+        font-weight:800;
+        letter-spacing:2px;
+        color:var(--muted);
+    }
+
+    .pc-count{
+        font-size:.8rem;
+    }
+
+    .pc-count::after{
+        content:" picks";
     }
 
     .chev{
         display:none;
     }
 
+    .pc-pills{
+        display:flex;
+        justify-content:center;
+        flex-wrap:wrap;
+        margin-top:14px;
+    }
+
+    .pill{
+        font-size:.68rem;
+        padding:3px 10px;
+    }
+
+    .pc-roster{
+        display:block;
+        margin-top:16px;
+        padding:16px;
+        border-top:none;
+        border-radius:16px;
+        background:rgba(255,255,255,.04);
+    }
+
+    .pc-roster::before{
+        content:"⭐ ROSTER";
+        display:block;
+        margin-bottom:12px;
+        font-size:.7rem;
+        font-weight:800;
+        letter-spacing:2px;
+        color:var(--muted);
+    }
+
     .roster-item{
+        padding:10px 13px;
+        margin-bottom:7px;
+        border-radius:10px;
+        border-left-width:4px;
         font-size:.92rem;
-        padding:9px 12px;
+    }
+
+    .player-card.passed{
+        opacity:1;
     }
 
     .message-bar{
@@ -1052,34 +1199,35 @@ ul{
 }
 
 
-/* The banner is decoration. On a phone the item name already
-   makes it obvious what is being auctioned, so reclaim the space. */
+/* =====================================================
+   MOTION
+===================================================== */
 
-@media (max-width:640px){
+@keyframes cardGlow{
 
-    .auction-banner{
-        display:none;
+    0%,100%{
+        box-shadow:0 0 0 2px rgba(77,163,255,.3),var(--shadow);
     }
 
-    #currentItem{
-        margin-top:2px;
-    }
-
-}
-
-
-/* Very small phones: keep the bid row on one line */
-
-@media (max-width:340px){
-
-    #bidButton,
-    #passButton{
-        padding:0 11px;
-        font-size:.78rem;
+    50%{
+        box-shadow:0 0 0 2px rgba(77,163,255,.65),0 0 36px rgba(77,163,255,.32),var(--shadow);
     }
 
 }
 
+@keyframes bannerPulse{
+
+    0%,100%{
+        transform:scale(1);
+        box-shadow:0 6px 20px rgba(255,213,74,.28);
+    }
+
+    50%{
+        transform:scale(1.035);
+        box-shadow:0 8px 28px rgba(255,213,74,.45);
+    }
+
+}
 
 @media (prefers-reduced-motion:reduce){
 

@@ -56,6 +56,7 @@ import {
 const BID_POPUP = 900;
 const SOLD_POPUP = 1250;
 const FREE_POPUP = 700;
+const RANDOM_POPUP = 1800;
 
 
 function el(id) {
@@ -412,15 +413,29 @@ function passBid() {
     a.out[passer] = true;
 
     // No bid on the table means this is the lone bidder turning
-    // the item down, so it goes free to the next player who needs one.
+    // the item down. Handing it to the next seat every time quietly
+    // favours whoever sits there, so the winner is drawn at random
+    // and announced.
     if (a.currentBid === 0) {
 
-        const receiver = nextMatching(
-            (passer + 1) % playerCount(),
-            i => stillDrafting(i) && i !== passer
+        const candidates = game.players
+            .map((p, i) => i)
+            .filter(i => i !== passer && stillDrafting(i));
+
+        if (candidates.length === 0) {
+
+            return awardItem(passer, 0, "free");
+
+        }
+
+        const lucky =
+            candidates[Math.floor(Math.random() * candidates.length)];
+
+        setMessage(
+            `${nameOf(passer)} passed. ${nameOf(lucky)} was drawn at random from ${candidates.length}.`
         );
 
-        return awardItem(receiver === null ? passer : receiver, 0, true);
+        return awardItem(lucky, 0, "random");
 
     }
 
@@ -487,7 +502,10 @@ function recordPick(index, item, price) {
 }
 
 
-function awardItem(index, price, free = false) {
+// mode: "sold" (normal), "free" (nobody could pay),
+// "random" (someone passed and the winner was drawn)
+
+function awardItem(index, price, mode = "sold") {
 
     const a = game.auction;
 
@@ -497,16 +515,23 @@ function awardItem(index, price, free = false) {
 
     render();
 
-    showNotification(
+    const popup = {
 
-        free ? "FREE PICK" : "SOLD",
-        free ? `${winner.name} picks up` : `${winner.name} wins`,
-        `$${price}`,
-        a.currentItem.name
+        sold:   ["SOLD", `${winner.name} wins`, `$${price}`],
+        free:   ["FREE PICK", `${winner.name} picks up`, `$${price}`],
+        random: ["PASSED ON", `Randomly awarded to ${winner.name}`, "FREE"]
 
-    );
+    }[mode];
 
-    if (!free) playSoldSound();
+    showNotification(popup[0], popup[1], popup[2], a.currentItem.name);
+
+    if (mode !== "free") playSoldSound();
+
+    // The random draw gets a longer beat so nobody misses who got it.
+    const hold =
+        mode === "sold" ? SOLD_POPUP
+        : mode === "random" ? RANDOM_POPUP
+        : FREE_POPUP;
 
     setTimeout(() => {
 
@@ -514,7 +539,7 @@ function awardItem(index, price, free = false) {
 
         continueDraft();
 
-    }, free ? FREE_POPUP : SOLD_POPUP);
+    }, hold);
 
 }
 
