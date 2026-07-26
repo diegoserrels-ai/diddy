@@ -57,6 +57,45 @@ import { setSeatLock } from "./ui.js";
 import * as net from "./net.js";
 
 
+// Build marker. Check this in the console to confirm the deployed
+// files are not a stale cached copy: window.ADB_VERSION
+window.ADB_VERSION = "online-3";
+
+console.log("[ADB] auctionEngine loaded, build", window.ADB_VERSION);
+
+
+// Anything that blows up before or during setup lands in the message
+// bar, so a phone with no console still shows what went wrong.
+
+function reportFatal(prefix, detail) {
+
+    console.error("[ADB]", prefix, detail);
+
+    const bar = document.getElementById("gameMessage");
+
+    if (bar && !game.status.started) {
+
+        bar.textContent = `${prefix}: ${detail && detail.message ? detail.message : detail}`;
+
+    }
+
+}
+
+window.addEventListener("error", event => {
+
+    if (event.filename && !event.filename.includes("/js/")) return;
+
+    reportFatal("Error", event.message);
+
+});
+
+window.addEventListener("unhandledrejection", event => {
+
+    reportFatal("Error", event.reason);
+
+});
+
+
 // "local"  one device, pass and play
 // "host"   online, this browser is the referee
 // "guest"  online, this browser shows what the host publishes
@@ -131,9 +170,15 @@ function publish() {
 
     if (mode !== "host" || !roomCode) return;
 
-    net.publishState(roomCode, serialize()).catch(error => {
+    // The JSON round trip strips any undefined that would make
+    // Firebase reject the whole write.
+    const state = JSON.parse(JSON.stringify(serialize()));
 
-        console.error("Could not publish game state", error);
+    net.publishState(roomCode, state).catch(error => {
+
+        console.error("[ADB] publish failed", error);
+
+        setMessage("Sync problem: " + error.message);
 
     });
 
@@ -350,17 +395,19 @@ async function startOnline(settings) {
 
     roomCode = settings.code;
 
+    console.log("[ADB] online start, room", roomCode);
+
     setMessage("Connecting...");
 
     try {
 
         await net.connect();
 
+        console.log("[ADB] connected as", net.myUid());
+
     } catch (error) {
 
-        console.error(error);
-
-        setMessage("Could not connect. Check your connection and reload.");
+        reportFatal("Could not connect", error);
 
         return;
 
@@ -369,6 +416,8 @@ async function startOnline(settings) {
     let ready = false;
 
     net.watchRoom(roomCode, async room => {
+
+        try {
 
         if (!room) {
 
@@ -417,11 +466,16 @@ async function startOnline(settings) {
 
             net.keepSeatOnDisconnect(roomCode).catch(() => {});
 
+            console.log("[ADB] I am", mode, "seat", mySeat, "players:",
+                players.map(p => p.name).join(", "));
+
             if (mode === "host") {
 
                 await net.clearActions(roomCode);
 
                 if (!(await buildDeck())) return;
+
+                console.log("[ADB] deck ready:", game.auction.deck.length, "items");
 
                 game.status.started = true;
 
@@ -441,7 +495,21 @@ async function startOnline(settings) {
 
         if (mode === "guest" && room.state) {
 
+            if (!game.status.started) {
+
+                game.status.started = true;
+
+                console.log("[ADB] first state received, rev", room.state.rev);
+
+            }
+
             applyState(room.state);
+
+        }
+
+        } catch (error) {
+
+            reportFatal("Game setup failed", error);
 
         }
 
