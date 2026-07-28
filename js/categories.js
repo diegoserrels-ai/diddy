@@ -15,6 +15,7 @@ export const CATEGORIES = {
     "Actors":           { file: "actors.json" },
     "Characters":       { file: "characters.json" },
     "Memes":            { file: "memes.json" },
+    "Best Duos":        { file: "bestDuos.json" },
 
     "Athletes":         { sports: true, current: "athletesCurrent.json", allTime: "athletesAllTime.json" },
     "MLB Players":      { sports: true, current: "mlbCurrent.json",      allTime: "mlbAllTime.json" },
@@ -27,6 +28,7 @@ export const CATEGORIES = {
     "Ice Cream":        { file: "icecream.json" },
     "Soft Drinks":      { file: "SoftDrinks.json" },
     "Alcohol":          { file: "alcohol.json" },
+    "Best Food Duos":   { file: "foodDuos.json" },
 
     "Clothing Brands":  { file: "clothingbrands.json" },
     "Vacation Spots":   { file: "vacationSpots.json" }

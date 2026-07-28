@@ -59,7 +59,7 @@ import * as net from "./net.js";
 
 // Build marker. Check this in the console to confirm the deployed
 // files are not a stale cached copy: window.ADB_VERSION
-window.ADB_VERSION = "online-4";
+window.ADB_VERSION = "online-5";
 
 console.log("[ADB] auctionEngine loaded, build", window.ADB_VERSION);
 
@@ -675,6 +675,19 @@ function startRound() {
 
     }
 
+    const needing = game.players
+        .map((p, i) => i)
+        .filter(i => stillDrafting(i));
+
+    // Everyone else is full, so there is nobody left to bid against.
+    // Asking this player to buy the rest one at a time is pointless,
+    // so their remaining spots get filled at random.
+    if (needing.length === 1) {
+
+        return fillLastRoster(needing[0]);
+
+    }
+
     const item = drawNextItem();
 
     if (!item) {
@@ -1088,6 +1101,36 @@ function awardItem(index, price, how = "sold") {
         continueDraft();
 
     }, hold);
+
+}
+
+
+// Only one player still has spots to fill. The deck is already
+// shuffled, so drawing off the top is a random pick.
+
+function fillLastRoster(index) {
+
+    let given = 0;
+
+    while (stillDrafting(index)) {
+
+        const item = drawNextItem();
+
+        if (!item) break;
+
+        recordPick(index, item, 0);
+
+        given++;
+
+    }
+
+    finishDraft(
+
+        given === 0
+            ? undefined
+            : `Everyone else was full, so ${nameOf(index)} got the last ${given} ${given === 1 ? "pick" : "picks"} at random.`
+
+    );
 
 }
 
