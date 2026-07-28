@@ -229,6 +229,41 @@ function watchMyConnection(code) {
 }
 
 
+// Puts a player back in a room at the seat they already had. Used
+// when the lobby's disconnect handler fired while moving to the
+// game screen, which would otherwise strand them.
+
+export async function rejoin(code, name, seat) {
+
+    await connect();
+
+    // Done as a transaction so two people recovering at the same
+    // moment cannot both land on the same seat.
+    const result = await runTransaction(roomRef(code, "/players"), players => {
+
+        players = players || {};
+
+        if (players[uid]) return players;
+
+        const taken = Object.entries(players)
+            .filter(([key]) => key !== uid)
+            .map(([, p]) => p.seat);
+
+        let chosen = typeof seat === "number" ? seat : 0;
+
+        while (taken.includes(chosen)) chosen++;
+
+        players[uid] = { name: name, seat: chosen, joinedAt: Date.now() };
+
+        return players;
+
+    });
+
+    return result.committed;
+
+}
+
+
 // Once the draft is running, a dropped connection should not delete
 // you, or your roster would vanish mid game.
 

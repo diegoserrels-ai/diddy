@@ -200,6 +200,35 @@ export async function leaveRoom(code) {
 }
 
 
+export async function rejoin(code, name, seat) {
+
+    await connect();
+
+    const room = readRoom(code);
+
+    if (!room) return;
+
+    room.players = room.players || {};
+
+    if (!room.players[uid]) {
+
+        const taken = Object.entries(room.players)
+            .filter(([key]) => key !== uid)
+            .map(([, p]) => p.seat);
+
+        let chosen = typeof seat === "number" ? seat : 0;
+
+        while (taken.includes(chosen)) chosen++;
+
+        room.players[uid] = { name: name, seat: chosen, joinedAt: Date.now() };
+
+    }
+
+    writeRoom(code, room);
+
+}
+
+
 export async function keepSeatOnDisconnect() {
     // Nothing to do without a real connection to watch.
 }

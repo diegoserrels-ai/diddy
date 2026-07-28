@@ -69,6 +69,10 @@ export async function keepSeatOnDisconnect(code) {
     return (await load()).keepSeatOnDisconnect(code);
 }
 
+export async function rejoin(code, name, seat) {
+    return (await load()).rejoin(code, name, seat);
+}
+
 export async function publishState(code, state) {
     return (await load()).publishState(code, state);
 }

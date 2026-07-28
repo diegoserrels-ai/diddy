@@ -59,7 +59,7 @@ import * as net from "./net.js";
 
 // Build marker. Check this in the console to confirm the deployed
 // files are not a stale cached copy: window.ADB_VERSION
-window.ADB_VERSION = "online-3";
+window.ADB_VERSION = "online-4";
 
 console.log("[ADB] auctionEngine loaded, build", window.ADB_VERSION);
 
@@ -414,6 +414,11 @@ async function startOnline(settings) {
     }
 
     let ready = false;
+    let rejoinTried = false;
+
+    // Who we were in the last good snapshot. More trustworthy than
+    // anything saved before the game started.
+    let lastKnownMe = null;
 
     net.watchRoom(roomCode, async room => {
 
@@ -429,15 +434,38 @@ async function startOnline(settings) {
 
         const players = net.playerList(room);
 
-        const me = players.find(p => p.uid === net.myUid());
+        let me = players.find(p => p.uid === net.myUid());
+
+        // Our seat is missing. Almost always this means the lobby's
+        // disconnect handler fired while we were moving to this page,
+        // so put ourselves back rather than stranding the player.
+        const known = lastKnownMe || {
+            name: settings.myName,
+            seat: settings.seat ?? 0
+        };
+
+        if (!me && !rejoinTried && known.name) {
+
+            rejoinTried = true;
+
+            console.log("[ADB] seat missing, rejoining as", known.name, "seat", known.seat);
+
+            await net.rejoin(roomCode, known.name, known.seat);
+
+            // That write brings us straight back here with a seat.
+            return;
+
+        }
 
         if (!me) {
 
-            setMessage("You are not in this game any more.");
+            setMessage("You are not in this game any more. Go back and rejoin the lobby.");
 
             return;
 
         }
+
+        lastKnownMe = { name: me.name, seat: me.seat };
 
         // Worked out from the room itself rather than trusting
         // whatever was saved before the game started.

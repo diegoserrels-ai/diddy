@@ -17,7 +17,7 @@ import { CATEGORIES, resolveFile } from "./categories.js";
 
 import {
     connect, createRoom, joinRoom, watchRoom, setStatus,
-    leaveRoom, myUid, playerList, isMock
+    leaveRoom, myUid, playerList, isMock, keepSeatOnDisconnect
 } from "./net.js";
 
 import { MAX_PLAYERS, MIN_PLAYERS } from "./firebaseConfig.js";
@@ -30,6 +30,7 @@ let localCount = 2;
 let roomCode = null;
 let stopWatching = null;
 let iAmHost = false;
+let handingOff = false;
 
 
 function el(id) {
@@ -517,7 +518,13 @@ async function startOnlineGame() {
 // Everyone lands here the moment the host starts. Each device saves
 // who it is, then goes to the game screen.
 
-function handoffToGame(room) {
+async function handoffToGame(room) {
+
+    // renderLobby can fire several times before the browser actually
+    // leaves, so only do this once.
+    if (handingOff) return;
+
+    handingOff = true;
 
     if (stopWatching) {
 
@@ -526,18 +533,35 @@ function handoffToGame(room) {
 
     }
 
+    const me = playerList(room).find(p => p.uid === myUid());
+
     localStorage.setItem("auctionSettings", JSON.stringify({
 
         mode: "online",
         code: roomCode,
         uid: myUid(),
         isHost: iAmHost,
+        seat: me ? me.seat : 0,
+        myName: me ? me.name : "",
         names: playerList(room).map(p => p.name),
         ...room.settings
 
     }));
 
     el("lobbyStatus").textContent = "Starting...";
+
+    // Leaving this page drops the connection, and the lobby asked
+    // Firebase to remove us from the room when that happens. Call it
+    // off first, or we delete our own seat on the way to the game.
+    try {
+
+        await keepSeatOnDisconnect(roomCode);
+
+    } catch (error) {
+
+        console.error("[ADB] could not cancel the disconnect handler", error);
+
+    }
 
     // Keeps ?mock=1 on the address when testing offline.
     location.href = "game.html" + location.search;
